@@ -1,0 +1,19 @@
+.App{
+  padding:0;
+  background-color: rgb(62, 77, 99);
+  height: 100vh;
+}
+
+.Header{
+  background-color: lightslategray;
+  border-bottom: 1px solid #9c9898;
+}
+
+.InputField {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.Content {
+  margin-top: 10px;
+}
