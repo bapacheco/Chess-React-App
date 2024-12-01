@@ -7,7 +7,7 @@ import Header from "./components/Header";
 //pages
 import PlayPage from "./pages/PlayPage";
 import LoginPage from "./pages/LoginPage";
-
+import SignupPage from "./pages/SignupPage";
 
 export default function App() {
   
@@ -17,6 +17,7 @@ export default function App() {
         <Header />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/sign-up" element={<SignupPage/>} />
           <Route path="/" element={<PlayPage/>} />
           <Route path="*" element={<Navigate to={"/"} />} />
         </Routes>
