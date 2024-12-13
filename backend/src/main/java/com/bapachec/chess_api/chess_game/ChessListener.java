@@ -16,9 +16,11 @@ public class ChessListener implements ChessUI {
     String startSquare;
     @Setter
     String targetSquare;
-    @Setter
+
     @Getter
+    @Setter
     boolean success;
+
     @Getter
     @Setter
     char[][] updatedArr;
@@ -34,6 +36,7 @@ public class ChessListener implements ChessUI {
         if (!engine.isGameOver()) {
             boolean result = engine.makeMove(startSquare, targetSquare);
             setSuccess(result);
+
         }
         //display the match is over
 
