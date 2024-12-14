@@ -8,19 +8,31 @@ import Header from "./components/Header";
 import PlayPage from "./pages/PlayPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import HomePage from "./pages/HomePage";
+import UserProvider from "./contexts/UserProvider";
+import GameProvider from "./contexts/GameProvider";
 
 export default function App() {
   
   return (
     <Container fluid className="App">
       <BrowserRouter>
-        <Header />
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/sign-up" element={<SignupPage/>} />
-          <Route path="/" element={<PlayPage/>} />
-          <Route path="*" element={<Navigate to={"/"} />} />
-        </Routes>
+          <UserProvider>
+            <Header />
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/sign-up" element={<SignupPage/>} />
+                <Route path="/" element={<HomePage/>} />
+                  <Route path="*" element={
+                    <GameProvider>
+                      <Routes>
+                        <Route path="/play" element={<PlayPage />} />
+                        <Route path="*" element={<Navigate to="/" />} />
+                      </Routes>
+                    </GameProvider>
+                  } />
+              </Routes>
+          </UserProvider>
       </BrowserRouter>
     </Container>
   );
