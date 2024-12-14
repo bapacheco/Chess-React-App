@@ -1,10 +1,12 @@
 package com.bapachec.chess_api.chess_game;
 
+import com.bapachec.chess_api.chess_game.services.ChessEngineManager;
+import com.bapachec.chess_api.chess_game.services.ChessListener;
+import com.bapachec.chess_api.chess_game.services.ChessService;
 import com.bapachec.chess_api.exceptions.GameNotFoundException;
 import com.bapachec.chess_api.exceptions.UserNotFoundException;
 import com.bapachec.chess_api.user.entity.User;
 import com.bapachec.chess_api.user.repository.UserRepository;
-import com.github.bapachec.chessengine.ChessEngine;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

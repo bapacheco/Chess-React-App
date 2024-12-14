@@ -1,4 +1,4 @@
-package com.bapachec.chess_api.chess_game;
+package com.bapachec.chess_api.chess_game.services;
 import java.util.Random;
 
 public class ChessService {
