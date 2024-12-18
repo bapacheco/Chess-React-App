@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -85,6 +84,16 @@ public class UserController {
         return ResponseEntity.ok(res);
     }
 
+    @PostMapping("/register-user")
+    public ResponseEntity<Map<String, String>> registerUser(@RequestBody UserDto user_dto) {
+        User user = new User(user_dto.user_id(), Role.USER);
+        userRepository.save(user);
+        Map<String, String> res = new HashMap<>();
+        res.put("success", "registered user");
+        res.put("id", user_dto.user_id());
+        return ResponseEntity.ok(res);
+    }
+
     //todo: rework this or delete, this is just for testing
     @GetMapping("/pee")
     public String method(HttpServletRequest request) {
@@ -97,6 +106,7 @@ public class UserController {
         if (authentication.getName().equalsIgnoreCase("anonymousUser")) {
             return "notFound";
         }
+
 
         return "coco member";
     }

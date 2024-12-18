@@ -26,6 +26,9 @@ public class SecurityConfig {
     @Autowired
     private CookieAuthFilter cookieAuthFilter;
 
+    @Autowired
+    private JwtReqFilter jwtReqFilter;
+
     //after auth is customfilter
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -34,10 +37,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(PathRequest.toH2Console())
                         .disable())
-                .addFilterBefore(cookieAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtReqFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/session/token").permitAll()
-                        .requestMatchers(PathRequest.toH2Console()).permitAll()
+                        .requestMatchers("/api/session/register-user").permitAll()
                         .anyRequest().authenticated()
 
                 )
@@ -48,7 +51,7 @@ public class SecurityConfig {
 
         return http.build();
     }
-
+//                .addFilterAfter(cookieAuthFilter, JwtReqFilter.class)
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {

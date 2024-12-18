@@ -44,7 +44,7 @@ public class CookieAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         //log.info("LEEEEEEE : " + request.getCookies());
-        if (request.getRequestURI().equals("/api/session/token") && request.getCookies() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() != null || (request.getRequestURI().equals("/api/session/token") && request.getCookies() == null)) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -18,10 +18,7 @@ public class User {
     private Long id;
 
     @Column
-    private String username;
-
-    @Column
-    private String password;
+    private String user_id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -39,9 +36,8 @@ public class User {
         this.role = role;
     }
 
-    public User(String username, String password, Role role) {
-        this.username = username;
-        this.password = password;
+    public User(String user_id, Role role) {
+        this.user_id = user_id;
         this.role = role;
     }
 
