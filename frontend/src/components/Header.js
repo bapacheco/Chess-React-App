@@ -1,18 +1,18 @@
 import Navbar  from "react-bootstrap/Navbar";
 import { Nav, NavDropdown } from "react-bootstrap";
 import { NavLink, useLocation } from 'react-router-dom';
-import Spinner from "react-bootstrap/Spinner";
+//import Spinner from "react-bootstrap/Spinner";
 import Container from 'react-bootstrap/Container';
+import Stack from 'react-bootstrap/Stack';
 import { useUser } from "../contexts/UserProvider";
 
 export default function Header() {
-    const { user } = useUser();
+    const { user, logout } = useUser();
     const location = useLocation();
     const { pathname } = location;
     let disableSignIn = false;
     switch (pathname) {
         case '/login':
-        case '/sign-up':
             disableSignIn = true;
             break;
         default:
@@ -32,17 +32,23 @@ export default function Header() {
                         </Nav.Item>
                     :
                         <>
-                            {user !== null && 
-                                <div>
-                                <NavDropdown>
-                                    <NavDropdown.Item>
-                                        Profile
-                                    </NavDropdown.Item>
-                                    <NavDropdown.Item>
-                                        Logout
-                                    </NavDropdown.Item>
-                                </NavDropdown>
-                                </div>
+                            {user !== null &&
+                                <Stack direction="horizontal" gap={4}>
+                                    <div>Rank: {user.rank}</div>
+                                    <div>Games Played: {user.gamesPlayed}</div>
+                                    <div>Wins: {user.wins}</div>
+                                    <div>Losses: {user.losses}</div>
+                                    <div>
+                                        <NavDropdown>
+                                            <NavDropdown.Item>
+                                                Profile
+                                            </NavDropdown.Item>
+                                            <NavDropdown.Item onClick={logout}>
+                                                Logout
+                                            </NavDropdown.Item>
+                                        </NavDropdown>
+                                    </div>
+                                </Stack>
                             }
                         </>
                     }

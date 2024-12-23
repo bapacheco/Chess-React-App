@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useApi } from './ApiProvider';
 import { useLocation } from 'react-router-dom';
 
@@ -49,7 +49,9 @@ export default function UserProvider({ children }) {
         (async () => {
             if (api.isAuthenticated()) {
                 //get stats from express
+                const response = await api.get('/info/my-stats');
                 //set user to stats
+                setUser(response.ok ? response.data : null);
             }
             else {
                 setUser(null);

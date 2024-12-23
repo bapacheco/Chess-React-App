@@ -12,7 +12,7 @@ export default class ChessApiClient {
     //todo adjust to options.url containing the whole url
     async request(options) {
         let response = await this.requestInternal(options);
-        if (response.status === 401 && options.url !== '/login') {
+        if (response.status === 401 && options.url !== '/auth/login') {
             const refreshResponsive = await this.put('express','/token', {
                 access_token: localStorage.getItem('access_token'),
             });
@@ -24,13 +24,14 @@ export default class ChessApiClient {
 
         return response;
     }
-
+    //todo: adjust for /token (accessToken is sent in header and body withcredentials true)
     async requestInternal(options) {
         let req = {
             method: options.method,
             url: options.target_url,
             headers: {
                 'Content-Type' : 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('access_token'),
                 ...options.headers,
             },
             withCredentials: true,
@@ -109,6 +110,7 @@ export default class ChessApiClient {
     }
 
     async put(service, url, data, options) {
+        let target_url;
         switch (service) {
             case 'express':
                 target_url = this.express_url + url;
@@ -122,7 +124,7 @@ export default class ChessApiClient {
 
     //replace data with query in future updates (get info on other users);
     async get(url, data, options) {
-        target_url = this.express_url + url;
+        const target_url = this.express_url + url;
         return this.request({method: 'GET', target_url, url, data, ...options});
     }
 

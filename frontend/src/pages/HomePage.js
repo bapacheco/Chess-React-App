@@ -22,7 +22,7 @@ export default function HomePage() {
 
     return (
         <Body>
-            <div className="HomePage mt-6">
+            <div className="HomePage">
                 <h1>Home Page</h1>
                 
                 <div className="mt-4 mb-4">
