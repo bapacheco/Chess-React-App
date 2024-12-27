@@ -9,6 +9,7 @@ import com.bapachec.chess_api.user.entity.User;
 import com.bapachec.chess_api.user.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,20 +59,15 @@ public class ChessController {
     @PostMapping("/local-make-move")
     public ResponseEntity<Map<String, String>> makeMoveLocally(@RequestBody MoveRequest moveReq) throws UserNotFoundException, GameNotFoundException {
         Map<String, String> response = new HashMap<>();
-        //log.info("REACHED IN LOCAL-MAKE-MOVE");
 
-        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Optional<User> user = userRepository.findById(Long.valueOf(getUserid()));
 
-        //log.info(user.toString());
-        //log.info("IS ID INCLUDED: " + moveReq.getGame_id());
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new UserNotFoundException("User not found");
         }
         Long numId = Long.valueOf(moveReq.getGame_id());
 
         Optional<LocalGameEntity> localGameOpt = localGameRepository.findById(numId);
-        //Optional<OnlineGameEntity
         log.info(localGameOpt.toString());
 
         if (!localGameOpt.isPresent()) {
@@ -84,14 +80,8 @@ public class ChessController {
         String end = moveReq.getEnd();
         String fen = moveReq.getFen();
 
-        //ChessEngine engine = new ChessEngine(turn.charAt(0));
         ChessListener listener = engineManager.getListenerForUser(getUserid());
         char[][] arr = ChessService.convertToMatrix(fen);
-
-        //pass in array
-        //engine.start(arr);
-        //boolean result = engine.makeMove(start, end);
-        //arr = engine.boardData();
 
         listener.setArr(arr);
         listener.setStartSquare(start);
@@ -120,22 +110,30 @@ public class ChessController {
     public ResponseEntity<Map<String, String>> startGameLocal() throws UserNotFoundException {
         log.info("REACHED IN START-GAME-LOCAL");
         Map<String, String> response = new HashMap<>();
-
-        //Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info("User_ID? {}", getUserid());
         Optional<User> user = userRepository.findById(Long.valueOf(getUserid()));
 
-        //todo: initialize engine for custom boards for future
-        /*
-        ChessEngine engine = new ChessEngine();
-        engine.start();
-        char[][] arr = ChessService.convertToMatrix(fen);
-        arr = engine.boardData();
-        */
 
         if (user.isPresent()) {
+            String User_id = user.get().getUser_id();
+            log.info("\nUSER OBJECT {}", user.get());
+            log.info("\nUSER ID {}", User_id);
+            Optional<LocalGameEntity> gameEntity = localGameRepository.findLocalGameByUser_Id(User_id);
+
+            if (gameEntity.isPresent()) {
+                response.put("Error", "Local Game Already Exists");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
+
             LocalGameEntity new_local_game = new LocalGameEntity();
+
             new_local_game.setUser(user.get());
+            log.info("\nLOCALGAME USER ID {}", new_local_game.getId());
+            log.info("\nLOCALGAME USER ID {}", new_local_game.getUser().getUser_id());
+            log.info("\nLOCALGAME GETFEN {}", new_local_game.getFen());
+
             localGameRepository.save(new_local_game);
+
             engineManager.getListenerForUser(getUserid()); //getter but still creates new listener/game
             response.put("local_game_id", String.valueOf(new_local_game.getId()));
             //this is just for getting app to work, delete this if initialized engine above.

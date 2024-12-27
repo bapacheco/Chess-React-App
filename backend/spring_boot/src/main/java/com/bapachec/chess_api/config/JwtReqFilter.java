@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,18 +34,27 @@ public class JwtReqFilter extends OncePerRequestFilter {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private SecretKey mySecretKey;
 
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor("your_jwt_secret_your_jwt_secret_1234".getBytes());
     Jws<Claims> jws;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        log.info("REACHED IN JWTFILTER");
         String header = request.getHeader("Authorization");
+        Authentication lee = SecurityContextHolder.getContext().getAuthentication();
+        log.info("AUTH EXISTS FROM ANON? {}", lee);
+        if (lee != null) {
+            log.info("ENTERED {}", SecurityContextHolder.getContext().getAuthentication());
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
                 jws = Jwts.parser()
-                        .verifyWith(SECRET_KEY)
+                        .verifyWith(mySecretKey)
                         .build()
                         .parseSignedClaims(token);
 
@@ -56,8 +67,8 @@ public class JwtReqFilter extends OncePerRequestFilter {
 
                 User user = user_opt.get();
 
-                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null, Collections.emptyList());
-                 SecurityContextHolder.getContext().setAuthentication(auth);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId(), null, Collections.emptyList());
+                SecurityContextHolder.getContext().setAuthentication(auth);
 
             } catch (JwtException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");

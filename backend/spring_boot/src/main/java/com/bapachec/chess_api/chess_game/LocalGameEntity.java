@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "LocalGame")
+@Table(name = "localgame")
 @Setter
 @Getter
 public class LocalGameEntity {
@@ -15,13 +15,17 @@ public class LocalGameEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     private User user;
 
-    @Column
+    @Column(name = "fen", nullable = false)
     private String fen;
 
+    /*
+    @Column(name = "game_number", nullable = false)
+    private int gameNumber;
 
+     */
     //game status
 
     public LocalGameEntity() {this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";}

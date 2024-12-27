@@ -17,13 +17,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(name = "user_id", nullable = false, unique = true)
     private String user_id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<LocalGameEntity> localGame;
 
     /*
     @Column(unique = true, nullable = false)
@@ -46,12 +48,14 @@ public class User {
 
     //these set up foreign key
     //mappedby should be variable in Token named user
+    /*
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
     private Token token;
+
+     */
     // fetch will determine if associated objects will get queried immediately (eager)
     // or not but still have query statement ready(lazy)
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<LocalGameEntity> localGame;
+
     //if one to many, Need have a list
 
     /*

@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtReqFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(cookieAuthFilter, JwtReqFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/session/token").permitAll()
                         .requestMatchers("/api/session/register-user").permitAll()
@@ -50,7 +51,7 @@ public class SecurityConfig {
         return http.build();
     }
 //                .addFilterAfter(cookieAuthFilter, JwtReqFilter.class)
-
+//                .addFilterBefore(jwtReqFilter, UsernamePasswordAuthenticationFilter.class)
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();
