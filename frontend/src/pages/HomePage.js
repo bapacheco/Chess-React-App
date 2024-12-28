@@ -31,7 +31,7 @@ export default function HomePage() {
                 arePiecesDraggable={false}
                 boardWidth={500} />
                 </div>
-                <h2>Click here to play chess locally</h2>
+                <h2>Click here to play chess - 2 player local</h2>
                 <div className="mt-4 mb-4">
                     <Button variant="primary" size="lg" onClick={playLocal}>Play Now</Button>
                 </div>
