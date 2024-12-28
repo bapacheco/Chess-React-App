@@ -13,35 +13,10 @@ export default function UserProvider({ children }) {
     const current_url = location.pathname;
 
     const guest_login = useCallback(async () => {
-        let response;
-        try {
-            response = await fetch(SPRING_API_URL + '/api/session/token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type' : 'application/json',
-                },
-                credentials: 'include',
-            });
-        } catch(error) {
-            console.error("FAILEEEEED");
-            response = {
-                ok: false,
-                status: 500,
-                json: async() => { return {
-                    code:500,
-                    message: 'The server is unresponsive',
-                    description: error.toString(),
-                }; }
-            };
-        }
+        const result = await api.guest_register();
+        return result;
 
-        return {
-            ok: response.ok,
-            status: response.status,
-            body: response.status !== 204 ? await response.json() : null
-        };
-
-    }, []);
+    }, [api]);
 
     useEffect(() => {
         //console.log("=================================");
@@ -66,21 +41,7 @@ export default function UserProvider({ children }) {
             }
         }) ();
 
-        //took out current === '/play'
-        /*
-                if (current_url === '/') {
-            (async () => {
-                if (await guest_login() !== 'ok') {
-                    //flash error
-                    console.log("NOOOOOOOO MUSSSSSSSTARRD");
-                }
-                //console.log("MUSSTTAARD 2 IN USERPROVIDER");
-            }) ();
-        }
-        */
-
-
-    }, [current_url, guest_login, api]);
+    }, [guest_login, api]);
 
 
 
@@ -89,13 +50,15 @@ export default function UserProvider({ children }) {
         const result = await api.login(username, password);
         if (result === 'ok') {
             //get stats from express
+            const response = await api.get('/info/my-stats');
             //set user to stats
-            //const response = await api.get('/me');
-            //setUser(response.ok ? response.body : null);
+            setUser(response.ok ? response.data : null);
         }
         console.log(result + " login status");
         return result;
     }, [api]);
+
+
 
     
     const logout = useCallback(async () => {
