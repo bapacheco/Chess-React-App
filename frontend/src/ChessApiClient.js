@@ -6,20 +6,35 @@ export default class ChessApiClient {
 
     constructor() {
         this.express_url = EXPRESS_API_URL + '/api';
-        this.spring_url = SPRING_API_URL + ''; //todo remake this line
+        this.spring_url = SPRING_API_URL + '/api/chess'; //todo remake this line
     }
 
     //todo adjust to options.url containing the whole url
     async request(options) {
         let response = await this.requestInternal(options);
-        if (response.status === 401 && options.url !== '/auth/login') {
-            const refreshResponsive = await this.put('express','/token', {
-                access_token: localStorage.getItem('access_token'),
-            });
-            if (refreshResponsive.ok) {
-                localStorage.setItem('access_token', refreshResponsive.data.access_token);
-                response = await this.requestInternal(options);
+        console.log("response: ", response.status);
+        if (response.status === 401 && (options.url !== '/auth/login' || options.url !== '/auth/anonymous-register')) {
+            console.log("ENTERED RE-AUTH BRANCH");
+
+            let refreshResponsive;
+            if (options.url === '/auth/anon-token') {
+                refreshResponsive = await this.put('express', '/auth/anon-token', null);
+                if (refreshResponsive.ok) {
+                    response = await this.requestInternal(options);
+                }
             }
+            else {
+                refreshResponsive = await this.put('express','/auth/token', {
+                    access_token: localStorage.getItem('access_token'),
+                });
+
+                if (refreshResponsive.ok) {
+                    localStorage.setItem('access_token', refreshResponsive.data.access_token);
+                    response = await this.requestInternal(options);
+                }
+            }
+            console.log(refreshResponsive);
+
         }
 
         return response;
@@ -48,12 +63,13 @@ export default class ChessApiClient {
             response = await axios(req);
 
         } catch (error) {
+            //todo adjust this catch clause for axios
             response = {
                 ok: false,
-                status: 500,
+                status: error.response?.status,
                 json: async () => {
                     return {
-                        code: 500,
+                        code: error.response?.status,
                         message: 'The server is unresponsive',
                         description: error.toString(),
                     };
@@ -86,9 +102,20 @@ export default class ChessApiClient {
         }
 
         //console.log('access_token', response.data.access_token);
+        if (response.data.spring_notify) {
+            //flash message
+        }
 
         localStorage.setItem('access_token', response.data.access_token);
         return 'ok';
+    }
+
+    async guest_register() {
+        const response = await this.post('express', '/auth/anonymous-register', null);
+
+        if (!response.ok) {
+            return response.status === 401 ? 'fail' : 'error';
+        }
     }
 
     async logout() {
