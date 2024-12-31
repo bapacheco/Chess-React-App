@@ -1,9 +1,8 @@
 import { Chessboard } from "react-chessboard";
 import { useGameProvider } from "../contexts/GameProvider";
+import { useApi } from "../contexts/ApiProvider";
 import { useState } from "react";
 import { Button } from "react-bootstrap";
-
-const BASE_API_URL = process.env.REACT_APP_BASE_API_URL;
 
 export default function ChessGame() {
 
@@ -13,25 +12,20 @@ export default function ChessGame() {
     //const [position, setPosition] = useState(localStorage.getItem('fen'));
     const [promotionPiece, setPromotionPiece] = useState(null); //piece or square
 
+    const api = useApi();
+
     const handlePromotionPiece = (piece) => {
 
     }
 
     const makeMove = async(data) => {
         try {
-            const response = await fetch(BASE_API_URL + '/api/chess/local-make-move', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify(data),
-            });
 
+            const response = await api.post('spring', '/local-make-move', data);
+            console.log('RESPONSE IN MAKEMOVE', response);
             if (response.ok) {
-                const data = await response.json();
-                if (data.valid === 'true') {
-                    //console.log(board);
+                if (response.data.valid === 'true') {
+                    console.log("ENTERED TRUE BRANCH");
                     if (turn === "w") {
                         setTurn("b");
                         localStorage.setItem("turn", "b");
@@ -40,25 +34,25 @@ export default function ChessGame() {
                         setTurn("w");
                         localStorage.setItem("turn", "w");
                     }
-                    setBoard(data.fen);
-                    localStorage.setItem("fen", data.fen);
+                    setBoard(response.data.fen);
+                    localStorage.setItem("fen", response.data.fen);
                     
                 }
 
             }
         } catch (error) {
-            console.log("WRONG");
+            console.log("WRONG", error);
         }
 
     }
 
     function onDrop(sourceSquare, targetSquare) {
         //const lee = localStorage.getItem('fen')
-        console.log("board");
-        console.log(board);
-        console.log("Turn");
-        console.log(turn);
-        const DummDate = {
+        //console.log("board");
+        //console.log(board);
+        //console.log("Turn");
+        //console.log(turn);
+        const data = {
             "game_id": gameId,
             "start": sourceSquare,
             "end": targetSquare,
@@ -66,7 +60,7 @@ export default function ChessGame() {
             "turn": turn
         };
 
-        makeMove(DummDate);
+        makeMove(data);
 
     }
 
