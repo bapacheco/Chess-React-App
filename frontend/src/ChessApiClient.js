@@ -75,10 +75,11 @@ export default class ChessApiClient {
                     };
                 }
             }
+            //console.log('RESPONSE ERROR', response);
         }
         //console.log('RESPONSE ACTUAL', response);
         return {
-            ok: response.statusText,
+            ok: true,
             status: response.status,
             data: response.status !== 204 ? await response.data : null
         };
@@ -133,6 +134,7 @@ export default class ChessApiClient {
                 target_url = this.spring_url + url;
                 break;
         }
+        
         return this.request({method: 'POST', target_url, url, data, ...options});
     }
 
