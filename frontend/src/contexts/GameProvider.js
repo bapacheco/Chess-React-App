@@ -51,7 +51,7 @@ export default function GameProvider({ children }) {
     }, [api]);
 
     
-    useLayoutEffect(() => {
+    useEffect(() => {
 
         (async () => {
             let savedGameID = localStorage.getItem('local_game_id');
@@ -64,8 +64,10 @@ export default function GameProvider({ children }) {
                 const response = await getGameID();
                 if (!response.ok) {
                     //flash here
+                    console.log('Error', response);
                 }
                 else if (response.ok) {
+                    //console.log('Data of response', response.data);
                     localStorage.setItem('local_game_id', response.data.local_game_id);
                     SetGameId(response.data.local_game_id);
         
