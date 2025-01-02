@@ -48,6 +48,7 @@ public class ChessService {
 
     public static char[][] convertToMatrix(String fen) {
         char[][] arr = new char[8][8];
+        fen = fen.replaceAll("\\s+", "");
         String[] rows = fen.split("/");
 
         for (int i = 0; i < 8; i++) {

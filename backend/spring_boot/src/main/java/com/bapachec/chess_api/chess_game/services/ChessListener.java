@@ -6,10 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
-@Component
 public class ChessListener implements ChessUI {
 
     ChessEngine engine;
+    @Getter
     @Setter
     char[][] arr;
     @Setter
@@ -23,11 +23,12 @@ public class ChessListener implements ChessUI {
 
     @Getter
     @Setter
-    char[][] updatedArr;
+    String currentTurn;
 
     public ChessListener(ChessEngine engine) {
         this.engine = engine;
-        engine.addListener(this);
+        this.engine.addListener(this);
+        currentTurn = "w";
     }
 
     @Override
@@ -35,6 +36,14 @@ public class ChessListener implements ChessUI {
         engine.start(arr);
         if (!engine.isGameOver()) {
             boolean result = engine.makeMove(startSquare, targetSquare);
+            if (result) {
+                if (getCurrentTurn().equalsIgnoreCase("b")) {
+                    setCurrentTurn("w");
+                }
+                else {
+                    setCurrentTurn("b");
+                }
+            }
             setSuccess(result);
 
         }
@@ -51,7 +60,7 @@ public class ChessListener implements ChessUI {
     //calls board.data in 2d char
     @Override
     public void onBoardUpdated(char[][] chars) {
-        setUpdatedArr(chars);
+        setArr(chars);
     }
 
     //warnings or messages below
@@ -79,6 +88,7 @@ public class ChessListener implements ChessUI {
     public void draw() {
 
     }
+
 
 
 }

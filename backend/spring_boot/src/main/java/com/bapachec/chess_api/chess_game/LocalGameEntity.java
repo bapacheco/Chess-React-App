@@ -28,8 +28,11 @@ public class LocalGameEntity {
      */
     //game status
 
-    public LocalGameEntity() {this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";}
+    public LocalGameEntity() {this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";}
 
     public LocalGameEntity(String fen) { this.fen = fen; }
 
+    public void resetFen() {
+        this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+    }
 }

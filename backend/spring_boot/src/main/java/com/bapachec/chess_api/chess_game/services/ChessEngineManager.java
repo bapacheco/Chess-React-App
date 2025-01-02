@@ -11,12 +11,18 @@ public class ChessEngineManager {
     private final Map<String, ChessListener> userListeners = new ConcurrentHashMap<>();
 
     public ChessListener getListenerForUser(String userId) {
-        return userListeners.computeIfAbsent(userId, id -> {
-            ChessEngine engine = new ChessEngine();
-            return new ChessListener(engine);
-        });
+        return userListeners.get(userId);
+
     }
 
+    public ChessListener createListenerForUser(String userId) {
+        ChessEngine engine = new ChessEngine();
+        ChessListener listener = new ChessListener(engine);
+        userListeners.put(userId, listener);
+        return listener;
+    }
+
+    //todo change this so that it can be checked if game exists
     public ChessListener getEngineForUser(String userId) {
         return getListenerForUser(userId);
     }
