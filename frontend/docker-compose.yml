@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  frontend:
+    build: .
+    image: react-chessapp
+    ports:
+      - "8000:80"
+    restart: always
+  express:
+    build: ../backend/express
+    image: express-chessapp
+    env_file: .env.api.express
+    restart: always
+  spring-boot:
+    build: ../backend/spring_boot
+    image: spring-boot-chessapp
+    depends_on:
+      - db
+    env_file: .env.api.springboot
+    environment:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    restart: always
+      
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: chess
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - my-db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  my-db:
