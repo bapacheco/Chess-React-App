@@ -24,3 +24,7 @@ yarn-error.log*
 
 
 .env
+.env.production
+.env.api.express
+.env.api.springboot
+nginx.default.conf
