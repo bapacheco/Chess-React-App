@@ -2,7 +2,7 @@ import bycrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/user.js';
 import { GameStats } from '../models/gameStats.js';
-
+const SPRING_BOOT_URL = process.env.SPRING_BOOT_URL || 'http://localhost:8080';
 const ROLES = {
     USER: "USER",
     GUEST: "GUEST",
@@ -251,7 +251,7 @@ export const New_Token = async (req, res) => {
 const notifySpringBoot = async (user) => {
     let response;
     try {
-         response = await fetch('http://localhost:8080/api/session/register-user', {
+         response = await fetch(`${SPRING_BOOT_URL}/api/session/register-user`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
