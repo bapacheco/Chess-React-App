@@ -13,41 +13,6 @@ export default function GameProvider({ children }) {
     const getGameID = useCallback(async () => {
         const result = await api.post('spring', '/start-game-local');
         return result;
-
-        /*
-        let response;
-        try {
-            response = await fetch(BASE_API_URL + '/api/chess/start-game-local', {
-                method: 'POST',
-                headers: {
-                    'Content-Type' : 'application/json',
-                },
-                credentials: 'include',
-            });
-
-        } catch(error) {
-            console.log("WRONG");
-            console.error("HHHHHEEELP");
-            response = {
-                ok: false,
-                status: 500,
-                json: async() => { return {
-                    code: 500,
-                    message: 'The server is unresponsive',
-                    description: error.toString(),
-                };}
-
-            };
-        }
-                
-            console.log("ASYNC IS CALLED");
-
-        return {
-            ok: response.ok,
-            status: response.status,
-            body: response.status !== 204 ? await response.json() : null
-        };
-        */
     }, [api]);
 
     
@@ -55,10 +20,12 @@ export default function GameProvider({ children }) {
 
         (async () => {
             let savedGameID = localStorage.getItem('local_game_id');
-            if (savedGameID) {
+            let savedFen = localStorage.getItem('fen');
+            let savedTurn = localStorage.getItem('turn');
+            if (savedGameID && savedFen && savedTurn) {
                 SetGameId(savedGameID);
-                setFen(localStorage.getItem('fen'));
-                setTurn(localStorage.getItem('turn'));
+                setFen(savedFen);
+                setTurn(savedTurn);
             }
             else {
                 const response = await getGameID();

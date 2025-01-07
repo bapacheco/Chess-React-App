@@ -5,10 +5,14 @@ import { Form } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import InputField from "../components/InputField";
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useApi } from "../contexts/ApiProvider";
 
 
 export default function SignupPage() {
 
+    const navigate = useNavigate();
+    const api = useApi();
     const [formErrors, setFormErrors] = useState({});
     const usernameField = useRef();
     const emailField = useRef();
@@ -19,7 +23,7 @@ export default function SignupPage() {
         usernameField.current.focus();
     }, []);
 
-    const onSubmit = (ev) => {
+    const onSubmit = async(ev) => {
         ev.preventDefault();
 
         const username = usernameField.current.value;
@@ -48,7 +52,20 @@ export default function SignupPage() {
             return;
         }
 
-    }
+        const data = await api.post('express', '/auth/register', {
+            username: username,
+            email: email,
+            password: password
+        });
+
+        if (!data.ok) {
+            errors.email = "Something Wrong";
+            setFormErrors(errors);
+        } else {
+            setFormErrors({});
+            navigate('/login');
+        }
+    };
 
 
     return (
