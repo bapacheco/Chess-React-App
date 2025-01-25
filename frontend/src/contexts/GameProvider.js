@@ -29,18 +29,21 @@ export default function GameProvider({ children }) {
             }
             else {
                 const response = await getGameID();
+                console.log(response.ok);
                 if (!response.ok) {
                     //flash here
                     console.log('Error', response);
                 }
                 else if (response.ok) {
                     //console.log('Data of response', response.data);
-                    localStorage.setItem('local_game_id', response.data.local_game_id);
-                    SetGameId(response.data.local_game_id);
-        
-                    setFen(response.data.fen);
-                    localStorage.setItem('fen', response.data.fen);
-                    localStorage.setItem('turn', response.data.turn);
+                    if (response.status === 200) {
+                        localStorage.setItem('local_game_id', response.data.local_game_id);
+                        localStorage.setItem('fen', response.data.fen);
+                        localStorage.setItem('turn', response.data.turn);
+                        SetGameId(response.data.local_game_id);
+                        setFen(response.data.fen);
+                        setTurn(response.data.turn);
+                    }
                 }
    
             }
