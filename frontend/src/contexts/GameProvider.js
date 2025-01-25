@@ -56,7 +56,7 @@ export default function GameProvider({ children }) {
 
 
     return (
-        <GameProviderContext.Provider value={{gameId, getGameID, fen}}>
+        <GameProviderContext.Provider value={{gameId, getGameID, fen, turn}}>
             { children }
         </GameProviderContext.Provider>
     );

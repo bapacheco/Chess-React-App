@@ -4,11 +4,11 @@ import { useApi } from "../contexts/ApiProvider";
 import { useState } from "react";
 import { Button } from "react-bootstrap";
 
-export default function ChessGame() {
+export default function ChessGame({gameId, fen, turn}) {
 
-    const {gameId} = useGameProvider();
-    const [board, setBoard] = useState(localStorage.getItem('fen'));
-    const [turn, setTurn] = useState(localStorage.getItem('turn'));
+    //const {gameId} = useGameProvider();
+    const [board, setBoard] = useState(fen);
+    const [currTurn, setCurrTurn] = useState(turn);
     //const [position, setPosition] = useState(localStorage.getItem('fen'));
     const [promotionPiece, setPromotionPiece] = useState(null); //piece or square
 
@@ -26,12 +26,12 @@ export default function ChessGame() {
             if (response.ok) {
                 if (response.data.valid === 'true') {
                     console.log("ENTERED TRUE BRANCH");
-                    if (turn === "w") {
-                        setTurn("b");
+                    if (currTurn === "w") {
+                        setCurrTurn("b");
                         localStorage.setItem("turn", "b");
                     }
                     else {
-                        setTurn("w");
+                        setCurrTurn("w");
                         localStorage.setItem("turn", "w");
                     }
                     setBoard(response.data.fen);
@@ -57,7 +57,7 @@ export default function ChessGame() {
             "start": sourceSquare,
             "end": targetSquare,
             "fen": board,
-            "turn": turn
+            "turn": currTurn
         };
 
         makeMove(data);
