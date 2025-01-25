@@ -1,5 +1,5 @@
 import Navbar  from "react-bootstrap/Navbar";
-import { Nav, NavDropdown } from "react-bootstrap";
+import { Nav, NavDropdown, Spinner } from "react-bootstrap";
 import { NavLink, useLocation } from 'react-router-dom';
 //import Spinner from "react-bootstrap/Spinner";
 import Container from 'react-bootstrap/Container';
@@ -26,12 +26,21 @@ export default function Header() {
             <Container>
                 <Navbar.Brand>Basic Chess</Navbar.Brand>
                 <Nav>
-                    {(user === null || user === undefined) && !disableSignIn ? 
-                        <Nav.Item>
-                            <Nav.Link as={NavLink} to={"/login"}> Sign In </Nav.Link>
-                        </Nav.Item>
+                    {user === undefined ? 
+                        <Spinner animation="border" />
                     :
+
                         <>
+                            {user === null && 
+                                <>
+                                    {!disableSignIn &&
+                                    <Nav.Item>
+                                        <Nav.Link as={NavLink} to={"/login"}> Sign In </Nav.Link>
+                                    </Nav.Item>
+                                    }
+                                </>
+                            }
+
                             {user !== null &&
                                 <Stack direction="horizontal" gap={4}>
                                     <div>Rank: {user.rank}</div>

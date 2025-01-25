@@ -35,7 +35,6 @@ export default function UserProvider({ children }) {
                 if (current_url === '/') {
                     if (await guest_login() !== 'ok') {
                         //flash error
-                        console.log("NOOOOOOOO MUSSSSSSSTARRD");
                     }
                 }
             }

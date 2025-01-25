@@ -31,8 +31,6 @@ export default function SignupPage() {
         const password = passwordField.current.value;
         const password2 = passwordField2.current.value;
 
-        console.log(`You entered ${username}, ${email} : ${password}, ${password2}`);
-
         const errors = {};
         if (!username) {
             errors.username = 'Username must not be empty.';
