@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 //self made components
 import Header from "./components/Header";
 import PublicRoute from "./components/PublicRoute";
+import PrivateRoute from "./components/PrivateRoute";
 //pages
 import PlayPage from "./pages/PlayPage";
 import LoginPage from "./pages/LoginPage";
@@ -30,12 +31,14 @@ export default function App() {
                     } />
                   <Route path="/" element={<HomePage/>} />
                     <Route path="*" element={
-                      <GameProvider>
-                        <Routes>
-                          <Route path="/play" element={<PlayPage />} />
-                          <Route path="*" element={<Navigate to="/" />} />
-                        </Routes>
-                      </GameProvider>
+                      <PrivateRoute>
+                        <GameProvider>
+                          <Routes>
+                            <Route path="/play" element={<PlayPage />} />
+                            <Route path="*" element={<Navigate to="/" />} />
+                          </Routes>
+                        </GameProvider>
+                      </PrivateRoute>
                     } />
                 </Routes>
             </UserProvider>
