@@ -117,6 +117,8 @@ export default class ChessApiClient {
         if (!response.ok) {
             return response.status === 401 ? 'fail' : 'error';
         }
+
+        return 'ok';
     }
 
     async logout() {
