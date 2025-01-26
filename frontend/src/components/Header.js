@@ -29,35 +29,33 @@ export default function Header() {
                     {user === undefined ? 
                         <Spinner animation="border" />
                     :
-
                         <>
-                            {user === null && 
-                                <>
-                                    {!disableSignIn &&
-                                    <Nav.Item>
-                                        <Nav.Link as={NavLink} to={"/login"}> Sign In </Nav.Link>
-                                    </Nav.Item>
-                                    }
-                                </>
-                            }
+                            {user === null ? 
+                                    <>
+                                        {!disableSignIn &&
+                                        <Nav.Item>
+                                            <Nav.Link as={NavLink} to={"/login"}> Sign In </Nav.Link>
+                                        </Nav.Item>
+                                        }
+                                    </>
 
-                            {user !== null &&
-                                <Stack direction="horizontal" gap={4}>
-                                    <div>Rank: {user.rank}</div>
-                                    <div>Games Played: {user.gamesPlayed}</div>
-                                    <div>Wins: {user.wins}</div>
-                                    <div>Losses: {user.losses}</div>
-                                    <div>
-                                        <NavDropdown>
-                                            <NavDropdown.Item>
-                                                Profile
-                                            </NavDropdown.Item>
-                                            <NavDropdown.Item onClick={logout}>
-                                                Logout
-                                            </NavDropdown.Item>
-                                        </NavDropdown>
-                                    </div>
-                                </Stack>
+                                :
+                                    <Stack direction="horizontal" gap={4}>
+                                        <div>Rank: {user.rank}</div>
+                                        <div>Games Played: {user.gamesPlayed}</div>
+                                        <div>Wins: {user.wins}</div>
+                                        <div>Losses: {user.losses}</div>
+                                        <div>
+                                            <NavDropdown>
+                                                <NavDropdown.Item>
+                                                    Profile
+                                                </NavDropdown.Item>
+                                                <NavDropdown.Item onClick={logout}>
+                                                    Logout
+                                                </NavDropdown.Item>
+                                            </NavDropdown>
+                                        </div>
+                                    </Stack>
                             }
                         </>
                     }
