@@ -1,8 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useApi } from './ApiProvider';
-import { useLocation } from 'react-router-dom';
 
-const SPRING_API_URL = process.env.REACT_APP_SPRING_API_URL;
 const UserContext = createContext();
 
 //todo: resetting page resets state variables, calls guest register and gets new guest token everytime.
@@ -11,11 +9,10 @@ const UserContext = createContext();
 export default function UserProvider({ children }) {
     const [user, setUser] = useState();
     const [guest, setGuest] = useState(false);
-
     const api = useApi();
 
-    const location = useLocation();
-    const current_url = location.pathname;
+    //const location = useLocation();
+    //const current_url = location.pathname;
 
     const guest_login = useCallback(async () => {
         
@@ -30,7 +27,7 @@ export default function UserProvider({ children }) {
         (async () => {
             if (api.isAuthenticated()) {
                 //get stats from express
-                const response = await api.get('/info/my-stats');
+                const response = await api.get('express', '/info/my-stats');
                 //set user to stats
                 setUser(response.ok ? response.data : null);
             }
@@ -40,6 +37,7 @@ export default function UserProvider({ children }) {
                 //perhaps move guest login to here
 
                 //check if cookie exists then proceed here
+                /*
                 if (current_url === '/') {
                     if (!guest) {
                         const result = await guest_login();
@@ -51,6 +49,7 @@ export default function UserProvider({ children }) {
                         }
                     }
                 }
+                */
             }
         }) ();
 
@@ -61,7 +60,7 @@ export default function UserProvider({ children }) {
         const result = await api.login(username, password);
         if (result === 'ok') {
             //get stats from express
-            const response = await api.get('/info/my-stats');
+            const response = await api.get('express', '/info/my-stats');
             //set user to stats
             setUser(response.ok ? response.data : null);
             setGuest(false);
