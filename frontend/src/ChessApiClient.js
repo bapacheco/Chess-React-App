@@ -12,7 +12,7 @@ export default class ChessApiClient {
     //todo adjust to options.url containing the whole url
     async request(options) {
         let response = await this.requestInternal(options);
-        console.log("response: ", response.status);
+        console.log("response IN APICLIENTJS: ", response.status);
         if (response.status === 401 && (options.url !== '/auth/login' || options.url !== '/auth/anonymous-register')) {
             console.log("ENTERED RE-AUTH BRANCH");
 
@@ -124,6 +124,9 @@ export default class ChessApiClient {
     async logout() {
         //this would call delete to express
         localStorage.removeItem('access_token');
+        localStorage.removeItem('fen');
+        localStorage.removeItem('turn');
+        localStorage.removeItem('local_game_id');
     }
 
     async post(service, url, data, options) {
@@ -154,8 +157,17 @@ export default class ChessApiClient {
     }
 
     //replace data with query in future updates (get info on other users);
-    async get(url, data, options) {
-        const target_url = this.express_url + url;
+    async get(service, url, data, options) {
+        let target_url;
+        switch (service) {
+            case 'express':
+                target_url = this.express_url + url;
+                break;
+            case 'spring':
+                target_url = this.spring_url + url;
+                break;
+        }
+
         return this.request({method: 'GET', target_url, url, data, ...options});
     }
 
