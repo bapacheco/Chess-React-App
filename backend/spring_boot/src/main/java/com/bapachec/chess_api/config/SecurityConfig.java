@@ -38,8 +38,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtReqFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieAuthFilter, JwtReqFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/session/token").permitAll()
-                        .requestMatchers("/api/session/register-user").permitAll()
+                        .requestMatchers("/api/session/register-user", "/ws-chess/**").permitAll()
                         .anyRequest().authenticated()
 
                 )
