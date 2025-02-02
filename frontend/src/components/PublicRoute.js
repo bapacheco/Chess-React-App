@@ -3,7 +3,7 @@ import { useUser } from "../contexts/UserProvider";
 
 export default function PublicRoute({ children }) {
     const { user } = useUser();
-
+    
     if (user === undefined) {
         return null;
     }
