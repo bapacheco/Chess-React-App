@@ -1,5 +1,6 @@
 package com.bapachec.chess_api.chess_game;
 
+import com.bapachec.chess_api.chess_game.DTO.MoveRequest;
 import com.bapachec.chess_api.chess_game.services.ChessEngineManager;
 import com.bapachec.chess_api.chess_game.services.ChessListener;
 import com.bapachec.chess_api.chess_game.services.ChessService;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -107,7 +109,7 @@ public class ChessController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/reset-local-game")
+    @PostMapping("/reset-local-game")
     public ResponseEntity<Map<String, String>> resetGameLocal() throws UserNotFoundException, GameNotFoundException {
         Map<String, String> response = new HashMap<>();
 
@@ -140,53 +142,56 @@ public class ChessController {
     @PostMapping("/start-game-local")
     public ResponseEntity<Map<String, String>> startGameLocal() throws UserNotFoundException {
         Map<String, String> response = new HashMap<>();
-        Optional<User> user = userRepository.findById(Long.valueOf(getUserid()));
+        String user_id = getUserid();
+        User user = userRepository.findUserByUser_id(user_id).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-
-        if (user.isPresent()) {
-            String User_id = user.get().getUser_id();
-
-            Optional<LocalGameEntity> gameEntity = localGameRepository.findLocalGameByUser_Id(User_id);
-
-            if (gameEntity.isPresent()) {
-                LocalGameEntity localSavedGame = gameEntity.get();
-                response.put("Saved Game", "Local Game Already Exists");
-                response.put("local_game_id", String.valueOf(localSavedGame.getId()));
-
-                if (engineManager.getEngineForUser(getUserid()) == null) {
-                    ChessListener listener = engineManager.createListenerForUser(getUserid());
-                    String savedFen = localSavedGame.getFen().split(" ")[0];
-                    String savedTurn = localSavedGame.getFen().split(" ")[1];
-                    char[][] savedGameArr = ChessService.convertToMatrix(savedFen);
-                    listener.setArr(savedGameArr);
-                    listener.setCurrentTurn(savedTurn);
-
-                    //just for testing, erase afterwards
-                    response.put("Saved Fen: ", localSavedGame.getFen());
-                }
-
-
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-
-            LocalGameEntity new_local_game = new LocalGameEntity();
-
-            new_local_game.setUser(user.get());
-
-            localGameRepository.save(new_local_game);
-
-            ChessListener listener = engineManager.createListenerForUser(getUserid());
-            listener.setArr(ChessService.convertToMatrix("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
-
-            response.put("local_game_id", String.valueOf(new_local_game.getId()));
-            //this is just for getting app to work, delete this if initialized engine above.
-            //response.put("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-            //response.put("turn", "w");
-            return ResponseEntity.ok(response);
-        } else {
-            throw new UserNotFoundException("User not found");
+        ChessListener listener = engineManager.createListenerForUser(getUserid());
+        if (listener == null) {
+            response.put("message", "A game is already active");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
+        LocalGameEntity new_local_game = new LocalGameEntity();
+        new_local_game.setUser(user);
+        localGameRepository.save(new_local_game);
+
+        listener.setArr(ChessService.convertToMatrix("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
+
+        response.put("local_game_id", String.valueOf(new_local_game.getId()));
+        //this is just for getting app to work, delete this if initialized engine above.
+        response.put("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        response.put("turn", "w");
+        return ResponseEntity.ok(response);
+
+
+
+    }
+
+    @GetMapping("/get-local-game")
+    public ResponseEntity<Map<String, String>> getLocalGame() throws GameNotFoundException {
+        Map<String, String> response = new HashMap<>();
+
+        String user_id = getUserid();
+
+        LocalGameEntity localSavedGame = localGameRepository.findLocalGameByUser_Id(user_id).orElseThrow(() -> new GameNotFoundException("Game not found"));
+
+        String savedFen = localSavedGame.getFen().split(" ")[0];
+        String savedTurn = localSavedGame.getFen().split(" ")[1];
+
+        if (engineManager.getEngineForUser(user_id) == null) {
+            ChessListener listener = engineManager.createListenerForUser(user_id);
+
+            char[][] savedGameArr = ChessService.convertToMatrix(savedFen);
+            listener.setArr(savedGameArr);
+            listener.setCurrentTurn(savedTurn);
+
+        }
+
+        response.put("local_game_id", String.valueOf(localSavedGame.getId()));
+        response.put("fen", savedFen);
+        response.put("turn", savedTurn);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
 
     }
 
