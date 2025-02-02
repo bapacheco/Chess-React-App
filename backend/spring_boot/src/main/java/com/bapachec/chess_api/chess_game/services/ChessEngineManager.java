@@ -16,6 +16,9 @@ public class ChessEngineManager {
     }
 
     public ChessListener createListenerForUser(String userId) {
+        if (getListenerForUser(userId) != null) {
+            return null;
+        }
         ChessEngine engine = new ChessEngine();
         ChessListener listener = new ChessListener(engine);
         userListeners.put(userId, listener);
