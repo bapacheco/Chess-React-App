@@ -24,7 +24,7 @@ export default function Header() {
     return (
         <Navbar className="Header">
             <Container>
-                <Navbar.Brand>Basic Chess</Navbar.Brand>
+                <Navbar.Brand as={NavLink} to={"/"}>Basic Chess</Navbar.Brand>
                 <Nav>
                     {user === undefined ? 
                         <Spinner animation="border" />
