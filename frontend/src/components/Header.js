@@ -25,41 +25,45 @@ export default function Header() {
         <Navbar className="Header">
             <Container>
                 <Navbar.Brand as={NavLink} to={"/"}>Basic Chess</Navbar.Brand>
-                <Nav>
+                <Navbar.Collapse className="justify-content-end">
                     {user === undefined ? 
                         <Spinner animation="border" />
                     :
-                        <>
+                        <Nav >
                             {user === null ? 
                                     <>
                                         {!disableSignIn &&
-                                        <Nav.Item>
-                                            <Nav.Link as={NavLink} to={"/login"}> Sign In </Nav.Link>
-                                        </Nav.Item>
+                                            <Nav.Item>
+                                                <Nav.Link as={NavLink} to={"/login"}> Sign In </Nav.Link>
+                                            </Nav.Item>
                                         }
                                     </>
 
                                 :
-                                    <Stack direction="horizontal" gap={4}>
-                                        <div>Rank: {user.rank}</div>
-                                        <div>Games Played: {user.gamesPlayed}</div>
-                                        <div>Wins: {user.wins}</div>
-                                        <div>Losses: {user.losses}</div>
-                                        <div>
-                                            <NavDropdown>
-                                                <NavDropdown.Item>
-                                                    Profile
-                                                </NavDropdown.Item>
-                                                <NavDropdown.Item onClick={logout}>
-                                                    Logout
-                                                </NavDropdown.Item>
-                                            </NavDropdown>
-                                        </div>
-                                    </Stack>
+                                <NavDropdown title="menu" align="end">
+                                    <NavDropdown.Item>
+                                        Profile
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item>
+                                        Rank: {user.rank}
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item>
+                                        Games Played: {user.gamesPlayed}
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item>
+                                        Wins: {user.wins}
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item>
+                                        Losses: {user.losses}
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item onClick={logout}>
+                                        Logout
+                                    </NavDropdown.Item>
+                                </NavDropdown>   
                             }
-                        </>
+                        </Nav>
                     }
-                </Nav>
+                </Navbar.Collapse>
             </Container>
         </Navbar>
     )

@@ -22,15 +22,13 @@ export default function HomePage() {
 
     return (
         <Body>
-            <div className="HomePage">
-                <h1>Home Page</h1>
+            <h1>Home Page</h1>
+
+            <div className="ChessHome">
                 
-                <div className="mt-4 mb-4">
-                <Chessboard 
+                <Chessboard id="HomeBoard"
                 position={"start"} 
-                arePiecesDraggable={false}
-                boardWidth={500} />
-                </div>
+                arePiecesDraggable={false} />
                 <h2>Click here to play chess - 2 player local</h2>
                 <div className="mt-4 mb-4">
                     <Button variant="primary" size="lg" onClick={playLocal}>Play Now</Button>

@@ -130,7 +130,6 @@ export default function Play() {
                         <div className="PlayArea">
                             <Chessboard position={board}
                             onPieceDrop={onDrop}
-                            boardWidth={800}
                             />
                             {promotionPiece && (
                                 <div>
