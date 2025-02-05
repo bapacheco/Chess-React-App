@@ -17,3 +17,33 @@
 .Content {
   margin-top: 10px;
 }
+
+.ChessHome {
+  width: 100%;
+  height: auto;
+}
+
+.PlayArea {
+  width: 100%;
+  height: auto;
+}
+
+@media (min-width: 1600px) {
+  .ChessHome {
+    width: 37%;
+  }
+  .PlayArea {
+    width: 37%;
+  }
+}
+
+@media (min-width: 2560px) {
+  .ChessHome {
+    width: 70%;
+  }
+  .PlayArea {
+    width: 70%;
+  }
+}
+
+
