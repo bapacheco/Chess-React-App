@@ -2,14 +2,15 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 //import { useGameProvider } from "./GameProvider";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-
-const SPRING_API_URL = process.env.REACT_APP_SPRING_API_URL;
+import { useApi } from "./ApiProvider";
 
 const WebSocketContext = createContext();
 
 //consider moving localstorage saves to here
 export default function WebSocketProvider({ children }) {
     //const { fen } = useGameProvider();
+    const api = useApi();
+
     const [board, setBoard] = useState();
     const [isValid, setIsValid] = useState(false);
     const client = useRef(null);
@@ -17,7 +18,7 @@ export default function WebSocketProvider({ children }) {
     useEffect(() => {
 
         console.log("in user effect in websocket");
-        const socket = new SockJS(SPRING_API_URL + "/ws-chess");
+        const socket = api.getWebsocket();
 
         let stompClient = Stomp.over(socket);
 

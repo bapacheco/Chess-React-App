@@ -1,4 +1,5 @@
 import axios from "axios";
+import SockJS from "sockjs-client";
 const EXPRESS_API_URL = process.env.REACT_APP_EXPRESS_API_URL;
 const SPRING_API_URL = process.env.REACT_APP_SPRING_API_URL;
 
@@ -7,6 +8,7 @@ export default class ChessApiClient {
     constructor() {
         this.express_url = EXPRESS_API_URL + '/api';
         this.spring_url = SPRING_API_URL + '/api/chess'; //todo remake this line
+        this.websocket_url = SPRING_API_URL + "/ws-chess";
     }
 
     //todo adjust to options.url containing the whole url
@@ -88,6 +90,10 @@ export default class ChessApiClient {
 
     isAuthenticated() {
         return localStorage.getItem('access_token') !== null;
+    }
+
+    getWebsocket() {
+        return new SockJS(this.websocket_url);
     }
 
     async login(username, password) {
