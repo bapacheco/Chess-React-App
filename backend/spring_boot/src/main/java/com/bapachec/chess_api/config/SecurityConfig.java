@@ -1,6 +1,8 @@
 package com.bapachec.chess_api.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
 
     @Autowired
@@ -28,6 +31,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtReqFilter jwtReqFilter;
+
+    @Value("${myapp.configure.ipaddress}")
+    private String ip_address;
 
     //after auth is customfilter
     @Bean
@@ -59,7 +65,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8000", String.format("http://%s:8000", ip_address)));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
