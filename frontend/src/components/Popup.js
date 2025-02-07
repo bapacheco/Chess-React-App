@@ -12,22 +12,19 @@ export default function Popup({ isOpen, onClose, title, onAccept, acceptText, ac
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                
                     {children}
-
-                
             </Modal.Body>
             <Modal.Footer>
             <Container>
                 <Row>
 
-                    <Col md={4}>
-                        <Button className="float-end" variant="secondary" size="lg"
-                        onClick={onClose}>Close</Button>
+                    <Col md={5}>
+                        <Button className="float-end" variant="secondary" 
+                        onClick={onClose}>Cancel</Button>
                     </Col>
                     <Col></Col>
-                    <Col md={4}>
-                        <Button className="float-start" variant={acceptColor} size="lg"
+                    <Col md={5}>
+                        <Button className="float-start" variant={acceptColor} 
                             onClick={onAccept}>{acceptText}</Button>
                     </Col>
 
