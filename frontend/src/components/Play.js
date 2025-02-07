@@ -7,6 +7,7 @@ import Spinner  from 'react-bootstrap/Spinner';
 //from chessgamejs
 import { Chessboard } from "react-chessboard";
 import { useWebSocket } from "../contexts/WebSocketProvider";
+import { useApi } from "../contexts/ApiProvider";
 
 export default function Play() {
     var map = {a:0, b:1, c:2, d:3, e:4, f:5, g:6, h:7};
@@ -14,7 +15,9 @@ export default function Play() {
 
     const [promotionPiece, setPromotionPiece] = useState(null); //piece or square
     const { gameId, local_game_start, saved_game } = useGameProvider();
-    
+
+    const api = useApi();
+
     console.log(board, " BEFORE USEEFFECT");
     useEffect(() => {
         //let saved_fen = saved_game();
@@ -79,6 +82,17 @@ export default function Play() {
         }
     };
 
+    const onReset = async(ev) => {
+        const response = await api.post('spring', '/reset-local-game');
+        if (response.ok && response.status === 200) {
+            //flash ok
+            setBoard(response.data.fen);
+        }
+        else {
+            //flash fail
+        }
+    }
+
     const updateBoard = (sourceSquare, targetSquare) => {
         let fen_string = board;
         const matrix = convertToMatrix(fen_string);
@@ -127,10 +141,11 @@ export default function Play() {
                     {board === null ?
                         <p>Could not connect to backend</p>
                     :
+                    <>
                         <div className="PlayArea">
                             <Chessboard position={board}
                             onPieceDrop={onDrop}
-                            />
+                        />
                             {promotionPiece && (
                                 <div>
                                     <Button onClick={() => handlePromotionPiece('q')}>Queen</Button>
@@ -140,11 +155,12 @@ export default function Play() {
 
                                 </div>
                             )}
-                            <div className="d-flex gap-5 mt-3">
-                            <Button variant="secondary" size="lg">Reset Game</Button>
-                            <Button variant="danger" size="lg">Request Draw</Button>
-                            </div>
                         </div>
+                        <div className="d-flex gap-5 mt-3">
+                        <Button variant="secondary" size="lg" onClick={onReset}>Reset Game</Button>
+                        <Button variant="danger" size="lg">Request Draw</Button>
+                        </div>
+                    </>
                     }
                 </>
             }
