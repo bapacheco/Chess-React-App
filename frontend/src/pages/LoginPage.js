@@ -55,7 +55,7 @@ export default function LoginPage() {
             <h1>Login</h1>
             <Form onSubmit={onSubmit}>
             <InputField 
-                name="username" label="Username or email address"
+                name="username" label="Email address"
                 error={formErrors.username} fieldRef={usernameField}/>
             <InputField
                 name="password" label="Password" type="password"

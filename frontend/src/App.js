@@ -43,7 +43,7 @@ export default function App() {
                     } />
                 </Routes>
               </GameProvider>
-            </UserProvider>
+          </UserProvider>
         </ApiProvider>
       </BrowserRouter>
     </Container>
