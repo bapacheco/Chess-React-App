@@ -4,19 +4,17 @@ import Body from "../components/Body";
 import Button from "react-bootstrap/Button";
 import { Chessboard } from "react-chessboard";
 
-//import { useApi } from "../contexts/ApiProvider";
-//import { useUser } from "../contexts/UserProvider";
+import { useGameProvider } from "../contexts/GameProvider";
 import { useNavigate } from 'react-router-dom';
 
 export default function HomePage() {
 
-    //const api = useApi();
-    //const { user, setUser , guest_login } = useUser();
-    //const navigate = useNavigate();
-    //const location = useLocation();
+    const { setGameType } = useGameProvider();
     const navigate = useNavigate();
 
     const playLocal = () => {
+        setGameType('local');
+        localStorage.setItem("game-type", 'local');
         navigate('/play');
     };
 
@@ -31,7 +29,7 @@ export default function HomePage() {
                 arePiecesDraggable={false} />
                 <h2>Click here to play chess - 2 player local</h2>
                 <div className="mt-4 mb-4">
-                    <Button variant="primary" size="lg" onClick={playLocal}>Play Now</Button>
+                    <Button variant="primary" size="lg" onClick={playLocal}>Play Now Locally</Button>
                 </div>
             </div>
         </Body>

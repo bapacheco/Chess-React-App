@@ -4,28 +4,35 @@ import { useApi } from "./ApiProvider";
 const GameProviderContext = createContext();
 //todo move gameid and turn to play component alongside fen,
 export default function GameProvider({ children }) {
-    //let gameId = null;
-    //let turn = "";
-    //const [fen, setFen] = useState();
+    const [isGameComplete, setIsGameComplete] = useState();
+    const [gameResult, setGameResult] = useState();
+    const [gameType, setGameType] = useState(localStorage.getItem("game-type"));
+    //consider switching ref to state variables
     const gameId = useRef();
     const turn = useRef("");
+
     //const [gameId, SetGameId] = useState(null);
     //const [fen, setFen] = useState();
     //const [turn, setTurn] = useState();
-    const count = useRef(0);
+//    const count = useRef(0);
     const api = useApi();
 
 
     const saved_game = useCallback(async() => {
-
+        console.log(gameType, "gameType SAVED_GAME");
         let fen = null;
-        const response = await api.get('spring', '/get-local-game');
+        const response = await api.get('spring', '/get-game-'+gameType);
         
         if (response.ok) {
             if (response.status === 200) {
                 gameId.current = response.data.local_game_id;
                 fen = response.data.fen;
                 turn.current = response.data.turn;
+
+                setIsGameComplete(response.data.game_complete);
+                if (response.data.game_complete === true) {
+                    setGameResult(response.data.game_result);
+                }
             }
         }
         
@@ -35,11 +42,13 @@ export default function GameProvider({ children }) {
 
     const local_game_start = useCallback(async() => {
         
-        console.log("EXECUTED: ", count);
-        count.current = count.current + 1;
+//        console.log("EXECUTED: ", count);
+//        count.current = count.current + 1;
+        console.log(gameType, "gameType game_Start");
+
         let fen = null;
         
-        const response = await api.post('spring', '/start-game-local');
+        const response = await api.post('spring', '/start-game-'+gameType);
         console.log(response.ok);
         if (!response.ok) {
             //flash here
@@ -54,15 +63,18 @@ export default function GameProvider({ children }) {
                 gameId.current = response.data.local_game_id;
                 fen = response.data.fen;
                 turn.current = response.data.turn;
+                setIsGameComplete(false);
             }
         }
         console.log(fen + " FEN");
         return fen;
     }, [api]);
 
+
     //took out turn from context
     return (
-        <GameProviderContext.Provider value={{gameId, saved_game, local_game_start}}>
+        <GameProviderContext.Provider value={{gameId, saved_game, local_game_start, 
+        isGameComplete, setIsGameComplete, gameResult, setGameResult, setGameType, gameType}}>
             { children }
         </GameProviderContext.Provider>
     );
