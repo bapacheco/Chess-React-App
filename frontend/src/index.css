@@ -28,21 +28,41 @@
   height: auto;
 }
 
-@media (min-width: 1600px) {
+
+
+@media (min-width: 1200px) {
   .ChessHome {
-    width: 37%;
+    width: 96%;
   }
   .PlayArea {
-    width: 37%;
+    width: 96%;
+  }
+}
+
+@media (min-width:1600px) {
+  .ChessHome {
+    width: 36%;
+  }
+  .PlayArea {
+    width: 46%;
+  }
+}
+
+@media (min-width: 1900px) {
+  .ChessHome {
+    width: 70%;
+  }
+  .PlayArea {
+    width: 70%;
   }
 }
 
 @media (min-width: 2560px) {
   .ChessHome {
-    width: 70%;
+    width: 80%;
   }
   .PlayArea {
-    width: 70%;
+    width: 80%;
   }
 }
 
