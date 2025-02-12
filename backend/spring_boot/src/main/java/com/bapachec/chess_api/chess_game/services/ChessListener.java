@@ -6,34 +6,33 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
+@Setter
+@Getter
 public class ChessListener implements ChessUI {
 
     ChessEngine engine;
-    @Getter
-    @Setter
+
     char[][] arr;
-    @Setter
     String startSquare;
-    @Setter
     String targetSquare;
 
-    @Getter
-    @Setter
     boolean success;
 
-    @Getter
-    @Setter
     String currentTurn;
 
-    public ChessListener(ChessEngine engine) {
+    GameSetting setting;
+
+    public ChessListener(ChessEngine engine, GameSetting setting) {
         this.engine = engine;
         this.engine.addListener(this);
         currentTurn = "w";
+        this.setting = setting;
+        this.engine.start();
     }
 
     @Override
     public void run() {
-        engine.start(arr);
+        //engine.start(arr);
         if (!engine.isGameOver()) {
             boolean result = engine.makeMove(startSquare, targetSquare);
             if (result) {
@@ -81,12 +80,19 @@ public class ChessListener implements ChessUI {
 
     @Override
     public boolean requestingDraw(boolean b) {
-        return false;
+        //todo implement properly for online play
+
+        return setting == GameSetting.LOCAL;
+
     }
 
     @Override
     public void draw() {
 
+    }
+
+    public void initiateDraw() {
+        engine.requestDraw();
     }
 
 

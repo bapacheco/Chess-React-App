@@ -1,5 +1,6 @@
-package com.bapachec.chess_api.chess_game;
+package com.bapachec.chess_api.chess_game.repository;
 
+import com.bapachec.chess_api.chess_game.entity.LocalGameEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

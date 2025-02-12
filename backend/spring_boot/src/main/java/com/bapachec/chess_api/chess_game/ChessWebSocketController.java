@@ -2,6 +2,8 @@ package com.bapachec.chess_api.chess_game;
 
 import com.bapachec.chess_api.chess_game.DTO.ChessMoveResponse;
 import com.bapachec.chess_api.chess_game.DTO.MoveRequest;
+import com.bapachec.chess_api.chess_game.entity.LocalGameEntity;
+import com.bapachec.chess_api.chess_game.repository.LocalGameRepository;
 import com.bapachec.chess_api.chess_game.services.ChessEngineManager;
 import com.bapachec.chess_api.chess_game.services.ChessListener;
 import com.bapachec.chess_api.chess_game.services.ChessService;
@@ -39,7 +41,6 @@ public class ChessWebSocketController {
     @MessageMapping("/move")
     @SendTo("/topic/game")
     public ChessMoveResponse makeMove(MoveRequest request, SimpMessageHeaderAccessor headerAccessor) throws GameNotFoundException {
-        log.info("REQUEST IN MAKEMOVE: {}, {}, {}", request.getStart(), request.getEnd(), request.getGame_id());
         Long numId = Long.valueOf(request.getGame_id());
 
         LocalGameEntity game = localGameRepository.findById(numId).orElseThrow(()
@@ -49,7 +50,7 @@ public class ChessWebSocketController {
         String start = request.getStart();
         String end = request.getEnd();
 
-        log.info("AUTH: {}", headerAccessor.getUser());
+
         ChessListener listener = engineManager.getListenerForUser(headerAccessor.getUser().getName());
 
 
@@ -59,13 +60,15 @@ public class ChessWebSocketController {
         listener.run();
         boolean result = listener.isSuccess();
 
+
         arr = listener.getArr();
         String newFen = ChessService.convertToFen(arr);
-
-        newFen = newFen + " " +listener.getCurrentTurn();
+        String newFenToSave = newFen + " " +listener.getCurrentTurn();
 
         if (result) {
-            game.setFen(newFen);
+            game.setFen(newFenToSave);
+            //todo
+            //check if listener/engine is game complete, set entity to complete with game result
             localGameRepository.save(game);
         }
 

@@ -1,4 +1,4 @@
-package com.bapachec.chess_api.chess_game;
+package com.bapachec.chess_api.chess_game.entity;
 import com.bapachec.chess_api.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,6 +21,13 @@ public class LocalGameEntity {
     @Column(name = "fen", nullable = false)
     private String fen;
 
+    //completed column, true or false
+    @Column(name = "is_game_complete", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isGameComplete;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private GameResult gameResult;
     /*
     @Column(name = "game_number", nullable = false)
     private int gameNumber;
@@ -32,7 +39,14 @@ public class LocalGameEntity {
 
     public LocalGameEntity(String fen) { this.fen = fen; }
 
-    public void resetFen() {
+    public void resetGame() {
         this.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+        this.isGameComplete = false;
+        this.gameResult = null;
+    }
+
+    public void drawGame() {
+        this.isGameComplete = true;
+        this.gameResult = GameResult.DRAW;
     }
 }

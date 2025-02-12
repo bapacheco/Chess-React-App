@@ -1,6 +1,6 @@
 package com.bapachec.chess_api.user.entity;
 
-import com.bapachec.chess_api.chess_game.LocalGameEntity;
+import com.bapachec.chess_api.chess_game.entity.LocalGameEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
