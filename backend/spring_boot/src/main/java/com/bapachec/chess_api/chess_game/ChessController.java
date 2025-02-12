@@ -1,9 +1,13 @@
 package com.bapachec.chess_api.chess_game;
 
 import com.bapachec.chess_api.chess_game.DTO.MoveRequest;
+import com.bapachec.chess_api.chess_game.entity.GameResult;
+import com.bapachec.chess_api.chess_game.entity.LocalGameEntity;
+import com.bapachec.chess_api.chess_game.repository.LocalGameRepository;
 import com.bapachec.chess_api.chess_game.services.ChessEngineManager;
 import com.bapachec.chess_api.chess_game.services.ChessListener;
 import com.bapachec.chess_api.chess_game.services.ChessService;
+import com.bapachec.chess_api.chess_game.services.GameSetting;
 import com.bapachec.chess_api.exceptions.GameNotFoundException;
 import com.bapachec.chess_api.exceptions.UserNotFoundException;
 import com.bapachec.chess_api.user.entity.User;
@@ -14,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -58,85 +61,40 @@ public class ChessController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/local-make-move")
-    public ResponseEntity<Map<String, String>> makeMoveLocally(@RequestBody MoveRequest moveReq) throws UserNotFoundException, GameNotFoundException {
+
+    @PostMapping("/reset-game-local")
+    public ResponseEntity<Map<String, String>> resetGameLocal() throws GameNotFoundException {
         Map<String, String> response = new HashMap<>();
 
-        Optional<User> user = userRepository.findById(Long.valueOf(getUserid()));
+        String User_id = getUserid();
+        //ChessListener listener = engineManager.getListenerForUser(User_id);
+        LocalGameEntity gameEntity = localGameRepository.findLocalGameByUser_Id(User_id).orElseThrow(() -> new GameNotFoundException("Game not found"));
 
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("User not found");
-        }
+        engineManager.resetEngineForListener(User_id);
+        //check if game completed, then make it false
 
-        Long numId = Long.valueOf(moveReq.getGame_id());
+        gameEntity.resetGame();
+        localGameRepository.save(gameEntity);
+        response.put("success", "Local Game reset");
+        response.put("fen", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        return ResponseEntity.status((HttpStatus.OK)).body(response);
 
-        Optional<LocalGameEntity> localGameOpt = localGameRepository.findById(numId);
-        log.info(localGameOpt.toString());
-
-        if (localGameOpt.isEmpty()) {
-            throw new GameNotFoundException("Game not found");
-        }
-
-        String start = moveReq.getStart();
-        String end = moveReq.getEnd();
-
-        ChessListener listener = engineManager.getListenerForUser(getUserid());
-
-
-        char [][] arr;
-        log.info("\nBEFORE MOVING {}", ChessService.convertToFen(listener.getArr()));
-        listener.setStartSquare(start);
-        listener.setTargetSquare(end);
-        listener.run();
-        boolean result = listener.isSuccess();
-        log.info("\nAfter MOVING {}", ChessService.convertToFen(listener.getArr()));
-
-        arr = listener.getArr();
-        String newFen = ChessService.convertToFen(arr);
-        newFen = newFen + " " +listener.getCurrentTurn();
-
-        response.put("fen", newFen);
-
-        if (!result) {
-            response.put("valid", "false");
-        }
-        else {
-            response.put("valid", "true");
-            LocalGameEntity localGame = localGameOpt.get();
-            localGame.setFen(newFen);
-            localGameRepository.save(localGame);
-        }
-        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/reset-local-game")
-    public ResponseEntity<Map<String, String>> resetGameLocal() throws UserNotFoundException, GameNotFoundException {
-        Map<String, String> response = new HashMap<>();
+    @PostMapping("/draw-game-local")
+    public ResponseEntity<Map<String, Object>> drawGameLocal() throws GameNotFoundException {
+        Map<String, Object> response = new HashMap<>();
+        String user_id = getUserid();
+        //User user = userRepository.findUserByUser_id(user_id).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Optional<User> user = userRepository.findById(Long.valueOf(getUserid()));
+        ChessListener listener = engineManager.getListenerForUser(user_id);
+        LocalGameEntity localGame = localGameRepository.findLocalGameByUser_Id(user_id).orElseThrow(() -> new GameNotFoundException("Game not found"));
 
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("User not found");
-        }
-        String User_id = user.get().getUser_id();
-
-        Optional<LocalGameEntity> gameEntity = localGameRepository.findLocalGameByUser_Id(User_id);
-
-        if (gameEntity.isEmpty()) {
-            response.put("Error", "Local Game does not exist");
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
-        }
-
-        engineManager.removeEngineForUser(User_id);
-        //todo this will call for createListenerForUser
-        engineManager.createListenerForUser(User_id);
-        LocalGameEntity game = gameEntity.get();
-        game.resetFen();
-        localGameRepository.save(game);
-        response.put("Success", "Local Game reset");
-
-        return ResponseEntity.status((HttpStatus.ACCEPTED)).body(response);
-
+        listener.initiateDraw();
+        localGame.drawGame();
+        localGameRepository.save(localGame);
+        response.put("game_result", GameResult.DRAW);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/start-game-local")
@@ -145,7 +103,7 @@ public class ChessController {
         String user_id = getUserid();
         User user = userRepository.findUserByUser_id(user_id).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        ChessListener listener = engineManager.createListenerForUser(getUserid());
+        ChessListener listener = engineManager.createListenerForUser(user_id, GameSetting.LOCAL);
         if (listener == null) {
             response.put("message", "A game is already active");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
@@ -167,9 +125,9 @@ public class ChessController {
 
     }
 
-    @GetMapping("/get-local-game")
-    public ResponseEntity<Map<String, String>> getLocalGame() throws GameNotFoundException {
-        Map<String, String> response = new HashMap<>();
+    @GetMapping("/get-game-local")
+    public ResponseEntity<Map<String, Object>> getLocalGame() throws GameNotFoundException {
+        Map<String, Object> response = new HashMap<>();
 
         String user_id = getUserid();
 
@@ -178,8 +136,8 @@ public class ChessController {
         String savedFen = localSavedGame.getFen().split(" ")[0];
         String savedTurn = localSavedGame.getFen().split(" ")[1];
 
-        if (engineManager.getEngineForUser(user_id) == null) {
-            ChessListener listener = engineManager.createListenerForUser(user_id);
+        if (engineManager.getListenerForUser(user_id) == null) {
+            ChessListener listener = engineManager.createListenerForUser(user_id, GameSetting.LOCAL);
 
             char[][] savedGameArr = ChessService.convertToMatrix(savedFen);
             listener.setArr(savedGameArr);
@@ -187,9 +145,17 @@ public class ChessController {
 
         }
 
+
+
         response.put("local_game_id", String.valueOf(localSavedGame.getId()));
         response.put("fen", savedFen);
         response.put("turn", savedTurn);
+        response.put("game_complete", false);
+        //check if game is completed, if so then put game completed
+        if(localSavedGame.isGameComplete()) {
+            response.put("game_complete", true);
+            response.put("game_result", localSavedGame.getGameResult());
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
 
