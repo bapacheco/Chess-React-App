@@ -1,21 +1,43 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 //import { useGameProvider } from "./GameProvider";
 import { Stomp } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
 import { useApi } from "./ApiProvider";
-
+import { useGameProvider } from "./GameProvider";
 const WebSocketContext = createContext();
 
-//consider moving localstorage saves to here
 export default function WebSocketProvider({ children }) {
     //const { fen } = useGameProvider();
     const api = useApi();
 
     const [board, setBoard] = useState();
-    const [isValid, setIsValid] = useState(false);
+    //const [isValid, setIsValid] = useState(false);
     const client = useRef(null);
+
+    //gameid from gameprovider
+    const { gameType, local_game_start, saved_game,
+        isGameComplete } = useGameProvider();
     
+    //took out gameid from dependency
     useEffect(() => {
+        //let saved_fen = saved_game();
+        //if (saved_fen === null) {
+            (async () => {
+                let saved_fen = await saved_game(gameType);
+                if (saved_fen === null) {
+                    saved_fen = await local_game_start(gameType);
+                }
+                setBoard(saved_fen);
+            }) ();
+        //}
+        
+    }, [local_game_start, saved_game, gameType]);
+
+    useEffect(() => {
+
+        if (isGameComplete === null)
+            return;
+        if (isGameComplete)
+            return;
 
         console.log("in user effect in websocket");
         const socket = api.getWebsocket();
@@ -28,26 +50,12 @@ export default function WebSocketProvider({ children }) {
             stompClient.subscribe("/topic/game", (message) => {
                 const move = JSON.parse(message.body);
                 setBoard(move.fen);
-                setIsValid(move.isValid);
+                //todo
+                //check if game is completed then set state for gamecomplete/gameresult
+                //setIsValid(move.isValid);
             });
 
         });
-
-        /*
-        stompClient = new Client({
-            webSocketFactory: () => socket,
-            onConnect: () => {
-                console.log("connected to websocket in spring-boot");
-                
-                //stompclient.subscribe content here
-
-                //stompclient.subscribe errors here
-
-            },
-            onDisconnect: () => console.log("disconnected"),
-        });
-
-        */
 
         stompClient.activate();
 
@@ -56,7 +64,7 @@ export default function WebSocketProvider({ children }) {
         return () => {
             if (stompClient) stompClient.deactivate();
         };
-    }, []);
+    }, [isGameComplete, api]);
 
     const sendMove = (game_id, start, end) => {
         console.log(client.current.connected);
@@ -71,8 +79,9 @@ export default function WebSocketProvider({ children }) {
         }
     };
 
+    //took out isValid from context
     return (
-        <WebSocketContext.Provider value={{sendMove, board, setBoard, isValid}} >
+        <WebSocketContext.Provider value={{sendMove, board, setBoard}} >
             { children }
         </WebSocketContext.Provider>
     );
