@@ -1,42 +1,59 @@
 import { useGameProvider } from "../contexts/GameProvider";
 import { useEffect, useState } from "react";
-//import ChessGame from "../components/ChessGame";
 import { Button } from "react-bootstrap";
 import Spinner  from 'react-bootstrap/Spinner';
 
 //from chessgamejs
 import { Chessboard } from "react-chessboard";
+
 import { useWebSocket } from "../contexts/WebSocketProvider";
 import { useApi } from "../contexts/ApiProvider";
+import Popup from "../components/Popup";
 
+//if playing local, draw should not be prompted twice, only in multiplayer
+//if playing with ai, draw is replaced with surrender
 export default function Play() {
     var map = {a:0, b:1, c:2, d:3, e:4, f:5, g:6, h:7};
-    const { sendMove, board, setBoard, isValid } = useWebSocket();
+    const { sendMove, board, setBoard } = useWebSocket();
 
     const [promotionPiece, setPromotionPiece] = useState(null); //piece or square
-    const { gameId, local_game_start, saved_game } = useGameProvider();
+    const { gameId } = useGameProvider();
+    const { isGameComplete, gameResult, gameType } = useGameProvider();
 
     const api = useApi();
 
+    //const [isGameComplete, setIsGameComplete] = useState(false);
+    const [modalState, setModalState] = useState({
+        isOpen: false,
+        title: "",
+        acceptText: "",
+        onAccept: null,
+        type: "",
+    });
+
     console.log(board, " BEFORE USEEFFECT");
+    //useeffect was used here
+
+    const gameResultTextMap = {
+        WHITE_WIN: "White Wins!",
+        BLACK_WIN: "Black Wins!",
+        STALEMATE: "Stalemate!",
+        DRAW: "Draw!"
+    };
+
+
     useEffect(() => {
-        //let saved_fen = saved_game();
-        //if (saved_fen === null) {
-            (async () => {
-                let saved_fen = await saved_game();
-                if (saved_fen === null) {
-                    saved_fen = await local_game_start();
-                }
-                setBoard(saved_fen);
-            }) ();
-        //}
-        
-    }, [gameId, local_game_start, saved_game]);
+        if (isGameComplete) {
+
+            gameCompleteModal();
+        }
+
+    }, [isGameComplete]);
 
     
     const handlePromotionPiece = (piece) => {
 
-    }
+    };
 
     const convertToMatrix = (fen_string) => {
         const matrix = [];
@@ -63,27 +80,33 @@ export default function Play() {
         return matrix;
     };
 
-    const convertToFen = (matrix) => {
-        for (let i = 0; i < 8; i++) {
-            let emptyCount = 0;
-            for (let j = 0; j < 8; j++) {
-                const spot = matrix[i][j];
-                if (spot.toLowerCase() !== spot.toUpperCase()) {
-                    if (emptyCount > 0) {
-                        //fen.append(emptyCount);
-                        emptyCount = 0;
-                    }
-                    //fen.append(spot);
-                }
-                else {
-                    emptyCount = emptyCount + 1;
-                }
-            }
-        }
+    const gameCompleteModal = () => {
+
+        setModalState({
+            isOpen: true,
+            title: "Game Over",
+            acceptText: "New Game",
+            onAccept: onReset,
+            type: "gameover"
+        });
+
     };
 
+    const resetModal = () => {
+
+        setModalState({
+            isOpen: true,
+            title: "Reset Game",
+            acceptText: "Reset Game",
+            onAccept: onReset,
+            type: "reset"
+        });
+
+    };
+
+    //move reset and draw to GameProvider
     const onReset = async(ev) => {
-        const response = await api.post('spring', '/reset-local-game');
+        const response = await api.post('spring', '/reset-game-'+gameType);
         if (response.ok && response.status === 200) {
             //flash ok
             setBoard(response.data.fen);
@@ -91,7 +114,25 @@ export default function Play() {
         else {
             //flash fail
         }
-    }
+        setModalState(prev => ({...prev, isOpen: false}))
+    };
+
+    const drawModal = () => {
+
+        setModalState({
+            isOpen: true,
+            title: "Draw",
+            acceptText: "Request Draw",
+            onAccept: onDraw,
+            type: "draw"
+        });
+
+    };
+
+    const onDraw = () => {
+        //action for request draw
+        setModalState(prev => ({...prev, isOpen: false}))
+    };
 
     const updateBoard = (sourceSquare, targetSquare) => {
         let fen_string = board;
@@ -129,7 +170,7 @@ export default function Play() {
 
         sendMove(gameId.current, sourceSquare, targetSquare);
 
-    }
+    };
 
 
     return (
@@ -144,9 +185,12 @@ export default function Play() {
                     <>
                         <div className="PlayArea">
                             <Chessboard position={board}
+                            arePiecesDraggable={!isGameComplete}
                             onPieceDrop={onDrop}
                         />
-                            {promotionPiece && (
+                            {promotionPiece && 
+                            //todo make this as Modal (popup component)
+                            (
                                 <div>
                                     <Button onClick={() => handlePromotionPiece('q')}>Queen</Button>
                                     <Button onClick={() => handlePromotionPiece('r')}>Rook</Button>
@@ -157,9 +201,40 @@ export default function Play() {
                             )}
                         </div>
                         <div className="d-flex gap-5 mt-3">
-                        <Button variant="secondary" size="lg" onClick={onReset}>Reset Game</Button>
-                        <Button variant="danger" size="lg">Request Draw</Button>
+                        <Button variant="secondary" size="lg" onClick={resetModal}>Reset</Button>
+                        <>
+                            {!isGameComplete && <Button variant="danger" size="lg" onClick={drawModal}>Draw</Button>}
+                        </>
                         </div>
+
+
+                        
+                        <Popup isOpen={modalState.isOpen} onClose={() => setModalState(prev => ({...prev, isOpen: false}))}
+                        title={modalState.title} onAccept={modalState.onAccept} acceptText={modalState.acceptText}>
+                            <>
+                                {modalState.type === "reset" ? 
+                                    <>
+                                        <h5>Your progress will be lost</h5>
+                                        <br></br>
+                                        <h5>Proceed?</h5>
+                                    </>
+                                :
+                                    <>
+                                        <h5>Both players agree to draw</h5>
+                                        <br></br>
+                                        <h5>Proceed?</h5>
+                                    </>
+                                }
+                                {isGameComplete &&
+                                    <>
+                                        <h5>{gameResultTextMap[gameResult]}</h5>
+                                        <br></br>
+                                        <h5>Would you like to play again?</h5>
+                                    </>
+                                }
+                            </>
+                        </Popup>
+
                     </>
                     }
                 </>
