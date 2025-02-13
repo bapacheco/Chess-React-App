@@ -14,13 +14,17 @@ export default function WebSocketProvider({ children }) {
     const client = useRef(null);
 
     //gameid from gameprovider
-    const { gameType, local_game_start, saved_game,
-        isGameComplete } = useGameProvider();
+    const { gameType, local_game_start, saved_game, setIsGameComplete,
+        setGameResult, isGameComplete } = useGameProvider();
     
     //took out gameid from dependency
     useEffect(() => {
         //let saved_fen = saved_game();
         //if (saved_fen === null) {
+
+        if (gameType === null)
+            return;
+
             (async () => {
                 let saved_fen = await saved_game(gameType);
                 if (saved_fen === null) {
@@ -39,7 +43,6 @@ export default function WebSocketProvider({ children }) {
         if (isGameComplete)
             return;
 
-        console.log("in user effect in websocket");
         const socket = api.getWebsocket();
 
         let stompClient = Stomp.over(socket);
@@ -50,6 +53,13 @@ export default function WebSocketProvider({ children }) {
             stompClient.subscribe("/topic/game", (message) => {
                 const move = JSON.parse(message.body);
                 setBoard(move.fen);
+                
+                if (move.GameComplete) {
+                    //set game complete
+                    //set game result
+                    setIsGameComplete(true);
+                    setGameResult(move.gameResult);
+                }
                 //todo
                 //check if game is completed then set state for gamecomplete/gameresult
                 //setIsValid(move.isValid);
