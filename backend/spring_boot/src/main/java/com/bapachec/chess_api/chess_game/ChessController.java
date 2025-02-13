@@ -137,11 +137,10 @@ public class ChessController {
         String savedTurn = localSavedGame.getFen().split(" ")[1];
 
         if (engineManager.getListenerForUser(user_id) == null) {
-            ChessListener listener = engineManager.createListenerForUser(user_id, GameSetting.LOCAL);
 
             char[][] savedGameArr = ChessService.convertToMatrix(savedFen);
-            listener.setArr(savedGameArr);
-            listener.setCurrentTurn(savedTurn);
+            ChessListener listener = engineManager.createListenerForUser(user_id, GameSetting.LOCAL, savedTurn, savedGameArr);
+
 
         }
 
@@ -150,13 +149,14 @@ public class ChessController {
         response.put("local_game_id", String.valueOf(localSavedGame.getId()));
         response.put("fen", savedFen);
         response.put("turn", savedTurn);
-        response.put("game_complete", false);
+
         //check if game is completed, if so then put game completed
         if(localSavedGame.isGameComplete()) {
             response.put("game_complete", true);
             response.put("game_result", localSavedGame.getGameResult());
         }
 
+        response.put("game_complete", false);
         return ResponseEntity.status(HttpStatus.OK).body(response);
 
     }

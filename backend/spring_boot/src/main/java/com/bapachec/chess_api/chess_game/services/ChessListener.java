@@ -44,7 +44,7 @@ public class ChessListener implements ChessUI {
         currentTurn = turn;
         this.setting = setting;
         arr = board;
-        this.engine.start(arr);
+        this.engine.start(arr, turn);
     }
 
     @Override

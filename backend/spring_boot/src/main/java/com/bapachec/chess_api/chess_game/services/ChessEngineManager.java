@@ -27,6 +27,17 @@ public class ChessEngineManager {
         return listener;
     }
 
+    public ChessListener createListenerForUser(String userId, GameSetting setting, String turn, char[][] board){
+        if (getListenerForUser(userId) != null) {
+            return null;
+        }
+
+        ChessEngine engine = new ChessEngine();
+        ChessListener listener = new ChessListener(engine, setting, turn, board);
+        userListeners.put(userId, listener);
+        return listener;
+    }
+
     //todo: there will be a way to let engine to reset
     public void resetEngineForListener(String userId) {
         ChessListener listener = userListeners.get(userId);
@@ -40,6 +51,9 @@ public class ChessEngineManager {
         listener.setArr(ChessService.convertToMatrix("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"));
         listener.setCurrentTurn("w");
         engine.start();
+
+        listener.setGameOver(false);
+        listener.setGameOverResult(null);
         //userListeners.put(userId, listener);
         log.info("Reset in manager AFTER RESET FEN: {}", ChessService.convertToFen(listener.getArr()));
     }
