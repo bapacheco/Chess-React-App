@@ -49,4 +49,10 @@ public class LocalGameEntity {
         this.isGameComplete = true;
         this.gameResult = GameResult.DRAW;
     }
+
+    public void gameWon(GameResult result) {
+        this.isGameComplete = true;
+        this.gameResult = result;
+    }
+
 }

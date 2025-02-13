@@ -1,5 +1,6 @@
 package com.bapachec.chess_api.chess_game.services;
 
+import com.bapachec.chess_api.chess_game.entity.GameResult;
 import com.github.bapachec.chessengine.ChessEngine;
 import com.github.bapachec.chessengine.ChessUI;
 import lombok.Getter;
@@ -22,12 +23,28 @@ public class ChessListener implements ChessUI {
 
     GameSetting setting;
 
+    GameResult gameOverResult;
+
+    //gameover set to false
+    boolean gameOver = false;
+
+
     public ChessListener(ChessEngine engine, GameSetting setting) {
         this.engine = engine;
         this.engine.addListener(this);
+        //change with parameter
         currentTurn = "w";
         this.setting = setting;
         this.engine.start();
+    }
+
+    public ChessListener(ChessEngine engine, GameSetting setting, String turn, char[][] board) {
+        this.engine = engine;
+        this.engine.addListener(this);
+        currentTurn = turn;
+        this.setting = setting;
+        arr = board;
+        this.engine.start(arr);
     }
 
     @Override
@@ -69,13 +86,18 @@ public class ChessListener implements ChessUI {
     }
 
     @Override
-    public void checkmate(boolean b) {
-
+    public void checkmate(boolean whiteWon) {
+        gameOver = true;
+        if (whiteWon)
+            gameOverResult = GameResult.WHITE_WIN;
+        else
+            gameOverResult = GameResult.BLACK_WIN;
     }
 
     @Override
     public void stalemate() {
-
+        gameOver = true;
+        gameOverResult = GameResult.STALEMATE;
     }
 
     @Override
@@ -88,7 +110,8 @@ public class ChessListener implements ChessUI {
 
     @Override
     public void draw() {
-
+        gameOver = true;
+        gameOverResult = GameResult.DRAW;
     }
 
     public void initiateDraw() {

@@ -2,6 +2,7 @@ package com.bapachec.chess_api.chess_game;
 
 import com.bapachec.chess_api.chess_game.DTO.ChessMoveResponse;
 import com.bapachec.chess_api.chess_game.DTO.MoveRequest;
+import com.bapachec.chess_api.chess_game.entity.GameResult;
 import com.bapachec.chess_api.chess_game.entity.LocalGameEntity;
 import com.bapachec.chess_api.chess_game.repository.LocalGameRepository;
 import com.bapachec.chess_api.chess_game.services.ChessEngineManager;
@@ -59,19 +60,29 @@ public class ChessWebSocketController {
         listener.setTargetSquare(end);
         listener.run();
         boolean result = listener.isSuccess();
-
+        
 
         arr = listener.getArr();
         String newFen = ChessService.convertToFen(arr);
         String newFenToSave = newFen + " " +listener.getCurrentTurn();
-
-        if (result) {
-            game.setFen(newFenToSave);
-            //todo
-            //check if listener/engine is game complete, set entity to complete with game result
-            localGameRepository.save(game);
+        
+        if (!result) {
+            return new ChessMoveResponse(newFen, false, false, GameResult.NONE);
         }
 
-        return new ChessMoveResponse(newFen, result);
+        //assume result is true
+        game.setFen(newFenToSave);
+
+
+        //check if listener/engine is game complete, set entity to complete with game result
+        if (!listener.isGameOver()) {
+            localGameRepository.save(game);
+            return new ChessMoveResponse(newFen, true, false, GameResult.NONE);
+        }
+
+        //assumes its game over
+        GameResult gameResult = listener.getGameOverResult();
+        game.gameWon(gameResult);
+        return new ChessMoveResponse(newFen, true, true, gameResult);
     }
 }
