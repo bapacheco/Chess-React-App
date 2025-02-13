@@ -18,7 +18,8 @@ export default function Play() {
 
     const [promotionPiece, setPromotionPiece] = useState(null); //piece or square
     const { gameId } = useGameProvider();
-    const { isGameComplete, gameResult, gameType } = useGameProvider();
+    const { isGameComplete, gameResult, gameType, 
+        setIsGameComplete, setGameResult } = useGameProvider();
 
     const api = useApi();
 
@@ -31,7 +32,6 @@ export default function Play() {
         type: "",
     });
 
-    console.log(board, " BEFORE USEEFFECT");
     //useeffect was used here
 
     const gameResultTextMap = {
@@ -110,6 +110,8 @@ export default function Play() {
         if (response.ok && response.status === 200) {
             //flash ok
             setBoard(response.data.fen);
+            setIsGameComplete(false);
+            setGameResult('None');
         }
         else {
             //flash fail
@@ -129,15 +131,22 @@ export default function Play() {
 
     };
 
-    const onDraw = () => {
+    const onDraw = async(ev) => {
         //action for request draw
+        const response = await api.post('spring', '/draw-game-'+gameType);
+        if (response.ok && response.status === 200) {
+            setIsGameComplete(true);
+            setGameResult(response.data.game_result);
+        }
+        else {
+            //flash fail
+        }
         setModalState(prev => ({...prev, isOpen: false}))
     };
 
     const updateBoard = (sourceSquare, targetSquare) => {
         let fen_string = board;
         const matrix = convertToMatrix(fen_string);
-        console.log(matrix);
         
         const charA1 = sourceSquare[0];
         const startCol = map[charA1];
@@ -148,8 +157,6 @@ export default function Play() {
         const targetCol = map[charB1];
         const charB2 = parseInt(targetSquare[1]);
         const targetRow = 8 - charB2;
-
-        console.log(startRow, startCol, targetRow, targetCol);
 
 
         const piece = matrix[startRow][startCol];
@@ -166,7 +173,6 @@ export default function Play() {
     function onDrop(sourceSquare, targetSquare) {
         const newBoardState = updateBoard(sourceSquare, targetSquare);
         setBoard(newBoardState);
-        console.log(newBoardState);
 
         sendMove(gameId.current, sourceSquare, targetSquare);
 
@@ -220,18 +226,24 @@ export default function Play() {
                                     </>
                                 :
                                     <>
-                                        <h5>Both players agree to draw</h5>
-                                        <br></br>
-                                        <h5>Proceed?</h5>
+                                    {modalState.type === "draw" ?
+                                        <>
+                                            <h5>Both players agree to draw</h5>
+                                            <br></br>
+                                            <h5>Proceed?</h5>
+                                        </>
+                                        
+                                        :
+                                        <>
+                                            <h5>{gameResultTextMap[gameResult]}</h5>
+                                            <br></br>
+                                            <h5>Would you like to play again?</h5>
+                                        </>
+                                    }
+
                                     </>
                                 }
-                                {isGameComplete &&
-                                    <>
-                                        <h5>{gameResultTextMap[gameResult]}</h5>
-                                        <br></br>
-                                        <h5>Would you like to play again?</h5>
-                                    </>
-                                }
+
                             </>
                         </Popup>
 
