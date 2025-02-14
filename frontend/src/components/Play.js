@@ -14,9 +14,10 @@ import Popup from "../components/Popup";
 //if playing with ai, draw is replaced with surrender
 export default function Play() {
     var map = {a:0, b:1, c:2, d:3, e:4, f:5, g:6, h:7};
-    const { sendMove, board, setBoard } = useWebSocket();
+    const { sendMove, sendMoveWithPromotion , board, setBoard } = useWebSocket();
 
-    const [promotionPiece, setPromotionPiece] = useState(null); //piece or square
+    //const [promotionProcessed, setPromotionProcessed] = useState(false); //piece or square
+    let promotionProcessed = false;
     const { gameId } = useGameProvider();
     const { isGameComplete, gameResult, gameType, 
         setIsGameComplete, setGameResult } = useGameProvider();
@@ -41,6 +42,13 @@ export default function Play() {
         DRAW: "Draw!"
     };
 
+    const promotionChoice = {
+        "Q": 1,
+        "B": 2,
+        "R": 3,
+        "N": 4,
+    };
+
 
     useEffect(() => {
         if (isGameComplete) {
@@ -50,10 +58,6 @@ export default function Play() {
 
     }, [isGameComplete]);
 
-    
-    const handlePromotionPiece = (piece) => {
-
-    };
 
     const convertToMatrix = (fen_string) => {
         const matrix = [];
@@ -170,7 +174,13 @@ export default function Play() {
         return matrix;
     };
 
-    function onDrop(sourceSquare, targetSquare) {
+    function onDrop(sourceSquare, targetSquare, piece) {
+
+        if (promotionProcessed) {
+            promotionProcessed = false;
+            return false;
+        }
+
         const newBoardState = updateBoard(sourceSquare, targetSquare);
         setBoard(newBoardState);
 
@@ -178,6 +188,18 @@ export default function Play() {
 
     };
 
+
+
+    const promotionPieceSelect = (piece, promoteFromSquare, promoteToSquare) => {
+
+        if (piece === undefined)
+            return false;
+        promotionProcessed = true;
+        const numChoice = promotionChoice[piece[1]]
+
+        sendMoveWithPromotion(gameId.current, promoteFromSquare, promoteToSquare, numChoice);
+        return true;
+    };
 
     return (
         <>
@@ -192,19 +214,11 @@ export default function Play() {
                         <div className="PlayArea">
                             <Chessboard position={board}
                             arePiecesDraggable={!isGameComplete}
+                            
+                            onPromotionPieceSelect={promotionPieceSelect}
                             onPieceDrop={onDrop}
                         />
-                            {promotionPiece && 
-                            //todo make this as Modal (popup component)
-                            (
-                                <div>
-                                    <Button onClick={() => handlePromotionPiece('q')}>Queen</Button>
-                                    <Button onClick={() => handlePromotionPiece('r')}>Rook</Button>
-                                    <Button onClick={() => handlePromotionPiece('b')}>Bishop</Button>
-                                    <Button onClick={() => handlePromotionPiece('n')}>Knight</Button>
 
-                                </div>
-                            )}
                         </div>
                         <div className="d-flex gap-5 mt-3">
                         <Button variant="secondary" size="lg" onClick={resetModal}>Reset</Button>
@@ -212,8 +226,6 @@ export default function Play() {
                             {!isGameComplete && <Button variant="danger" size="lg" onClick={drawModal}>Draw</Button>}
                         </>
                         </div>
-
-
                         
                         <Popup isOpen={modalState.isOpen} onClose={() => setModalState(prev => ({...prev, isOpen: false}))}
                         title={modalState.title} onAccept={modalState.onAccept} acceptText={modalState.acceptText}>

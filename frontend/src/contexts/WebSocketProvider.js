@@ -89,9 +89,21 @@ export default function WebSocketProvider({ children }) {
         }
     };
 
+    const sendMoveWithPromotion = (game_id, start, end, promotionChoice) => {
+        if (client.current && client.current.connected) {
+            console.log(start);
+            console.log(end);
+            console.log(promotionChoice);
+            client.current.publish({
+                destination: "/app/move-and-promote",
+                body: JSON.stringify({game_id, start, end, promotionChoice}),
+            });
+        }
+    };
+
     //took out isValid from context
     return (
-        <WebSocketContext.Provider value={{sendMove, board, setBoard}} >
+        <WebSocketContext.Provider value={{sendMove, sendMoveWithPromotion, board, setBoard}} >
             { children }
         </WebSocketContext.Provider>
     );
