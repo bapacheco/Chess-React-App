@@ -17,6 +17,8 @@ public class ChessListener implements ChessUI {
     String startSquare;
     String targetSquare;
 
+    int promotionChoice;
+
     boolean success;
 
     String currentTurn;
@@ -53,7 +55,7 @@ public class ChessListener implements ChessUI {
         if (!engine.isGameOver()) {
             boolean result = engine.makeMove(startSquare, targetSquare);
             if (result) {
-                if (getCurrentTurn().equalsIgnoreCase("b")) {
+                if (currentTurn.equalsIgnoreCase("b")) {
                     setCurrentTurn("w");
                 }
                 else {
@@ -69,7 +71,7 @@ public class ChessListener implements ChessUI {
 
     @Override
     public int promotionRequest() {
-        return 0;
+        return promotionChoice;
     }
 
 

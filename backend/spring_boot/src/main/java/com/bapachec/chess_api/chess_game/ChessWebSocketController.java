@@ -1,6 +1,7 @@
 package com.bapachec.chess_api.chess_game;
 
 import com.bapachec.chess_api.chess_game.DTO.ChessMoveResponse;
+import com.bapachec.chess_api.chess_game.DTO.MoveAndPromotionRequest;
 import com.bapachec.chess_api.chess_game.DTO.MoveRequest;
 import com.bapachec.chess_api.chess_game.entity.GameResult;
 import com.bapachec.chess_api.chess_game.entity.LocalGameEntity;
@@ -39,6 +40,51 @@ public class ChessWebSocketController {
         return auth.getName();
     }
 
+    @MessageMapping("/move-and-promote")
+    @SendTo("/topic/game")
+    public ChessMoveResponse makeMoveAndPromote(MoveAndPromotionRequest request, SimpMessageHeaderAccessor headerAccessor) throws GameNotFoundException {
+        Long numId = Long.valueOf(request.game_id());
+
+        LocalGameEntity game = localGameRepository.findById(numId).orElseThrow(()
+                -> new GameNotFoundException("Game not found: "+ request.game_id()));
+
+        String start = request.start();
+        String end = request.end();
+        int choice = request.promotionChoice();
+
+        ChessListener listener = engineManager.getListenerForUser(headerAccessor.getUser().getName());
+        char [][] arr;
+
+        listener.setStartSquare(start);
+        listener.setTargetSquare(end);
+        listener.setPromotionChoice(choice);
+        listener.run();
+        boolean result = listener.isSuccess();
+
+        arr = listener.getArr();
+        String newFen = ChessService.convertToFen(arr);
+        String newFenToSave = newFen + " " +listener.getCurrentTurn();
+
+        if (!result) {
+            return new ChessMoveResponse(newFen, false, false, GameResult.NONE);
+        }
+
+        //assume result is true
+        game.setFen(newFenToSave);
+
+
+        //check if listener/engine is game complete, set entity to complete with game result
+        if (!listener.isGameOver()) {
+            localGameRepository.save(game);
+            return new ChessMoveResponse(newFen, true, false, GameResult.NONE);
+        }
+
+        //assumes its game over
+        GameResult gameResult = listener.getGameOverResult();
+        game.gameWon(gameResult);
+        return new ChessMoveResponse(newFen, true, true, gameResult);
+    }
+
     @MessageMapping("/move")
     @SendTo("/topic/game")
     public ChessMoveResponse makeMove(MoveRequest request, SimpMessageHeaderAccessor headerAccessor) throws GameNotFoundException {
@@ -56,11 +102,11 @@ public class ChessWebSocketController {
 
 
         char [][] arr;
+
         listener.setStartSquare(start);
         listener.setTargetSquare(end);
         listener.run();
         boolean result = listener.isSuccess();
-        
 
         arr = listener.getArr();
         String newFen = ChessService.convertToFen(arr);

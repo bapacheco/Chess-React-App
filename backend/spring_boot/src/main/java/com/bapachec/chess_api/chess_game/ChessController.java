@@ -140,8 +140,9 @@ public class ChessController {
 
             char[][] savedGameArr = ChessService.convertToMatrix(savedFen);
             ChessListener listener = engineManager.createListenerForUser(user_id, GameSetting.LOCAL, savedTurn, savedGameArr);
-
-
+            response.put("game", "duplicate call");
+            if (listener == null)
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
 
 
